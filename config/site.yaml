@@ -11,25 +11,24 @@
 # Site Basic Information
 # =============================================================================
 site:
-  title: 余弦の博客 # 网站名称
-  alternate: cosine # 网站英文名称 用于页脚、Logo、@ handle 等
-  subtitle: WA 的一声就哭了 # 网站副标题
-  name: cos # 作者名称 - 请修改为你的名字
-  description: 一个基于 Astro 的现代化博客主题 # 网站描述
-  avatar: /img/avatar.webp # 网站头像
-  showLogo: true # 是否显示 Logo
-  author: Author # 作者名称 - 请修改为你的名字
-  url: https://koharu.cosine.ren # 站点 URL 用于 RSS 和 SEO
-  defaultOgImage: /img/avatar.webp # 默认 Open Graph 图片
-  startYear: 2024 # 建站年份
-  timezone: Asia/Shanghai # 时区配置 (IANA 格式)，用于日期显示和处理
-  keywords: # SEO 关键词 (全局)
-    - 博客
-    - Astro
+  title: "红尘笑的小窝"          # 网站名称
+  alternate: "hongchenxiao"     # 网站英文名称 用于页脚、Logo、@ handle 等
+  subtitle: "WA 的一声就哭了"    # 网站副标题
+  name: "kssku"                 # 作者名称 - 请修改为你的名字
+  description: "动漫 · 技术 · 日常"  # 网站描述
+  avatar: "/img/avatar.webp"    # 网站头像
+  showLogo: true                # 是否显示 Logo
+  author: "kssku"               # 作者名称 - 请修改为你的名字
+  url: "https://blog.kssku.top" # 站点 URL 用于 RSS 和 SEO
+  defaultOgImage: "/img/avatar.webp"  # 默认 Open Graph 图片
+  startYear: 2026               # 建站年份
+  timezone: "Asia/Shanghai"     # 时区配置 (IANA 格式)，用于日期显示和处理
+  keywords:                     # SEO 关键词 (全局)
+    - 二次元
     - 技术
+    - 动漫
     - 前端
-    # 请根据你的网站内容添加关键词
-  # breadcrumbHome: 首页  # 面包屑导航中首页的显示名称（默认: '首页'）
+  # breadcrumbHome: 首页        # 面包屑导航中首页的显示名称（默认: '首页'）
   # icp:                         # ICP 备案号（可自定义链接）
   #   text: "粤ICP备xxxxxxxxxx号"
   #   link: "https://beian.miit.gov.cn/"
@@ -134,7 +133,7 @@ featuredSeries:
     enabled: true # 启用此系列
     icon: ri:newspaper-line # 导航图标
     links: # 相关链接（可选）
-      github: https://github.com/your-username/your-repo # (可选) GitHub 仓库
+      github: https://github.com/kssku/kssku-blog # (可选) GitHub 仓库
       rss: /rss.xml # (可选) RSS 订阅链接
       # chrome: https://chromewebstore.google.com/detail/your-extension-id # (可选) 浏览器插件
       # docs: https://your-docs-url # (可选) 文档链接
@@ -162,11 +161,11 @@ featuredSeries:
 # -----------------------------------------------------------------------------
 social:
   github:
-    url: https://github.com/your-username # 替换为你的 GitHub 链接
+    url: https://github.com/kssku   # 替换为你的 GitHub 链接
     icon: ri:github-fill # Remix Icon 的 GitHub 图标
     color: '#191717' # (可选) 图标颜色
   email:
-    url: mailto:your@email.com # 替换为你的邮箱，需加 mailto: 前缀
+    url: mailto:598089280@qq.com    # 替换为你的邮箱，需加 mailto: 前缀
     icon: ri:mail-line
     color: '#55acd5'
   rss:
@@ -225,30 +224,19 @@ friends:
         image: https://your-blog.com/avatar.jpg # 头像链接
         color: "#ffc0cb" # 主题色（可选）
   data: # 友链列表
-    - site: 余弦の博客
-      url: https://blog.cosine.ren
-      owner: cos
-      desc: FE / ACG / 手工 / 深色模式强迫症 / INFP / 兴趣广泛养两只猫的老宅女 / remote
-      image: https://blog.cosine.ren/img/avatar.webp
-      color: '#ed788b'
-    - site: 示例博客 A
-      url: https://example-a.com
-      owner: Alice
-      desc: 一个热爱技术的开发者
-      image: https://api.dicebear.com/7.x/avataaars/svg?seed=Alice
-      color: '#BEDCFF'
-    - site: 示例博客 B
-      url: https://example-b.com
-      owner: Bob
-      desc: 分享生活与技术的小站
-      image: https://api.dicebear.com/7.x/avataaars/svg?seed=Bob
-      color: '#FBC1CC'
-    - site: 示例博客 C
-      url: https://example-c.com
-      owner: Carol
-      desc: 记录学习与成长的地方
-      image: https://api.dicebear.com/7.x/avataaars/svg?seed=Carol
-      color: '#ABDCFF'
+    # - site: 余弦の博客
+    #   url: https://blog.cosine.ren
+    #   owner: cos
+    #   desc: FE / ACG / 手工 / 深色模式强迫症 / INFP / 兴趣广泛养两只猫的老宅女 / remote
+    #   image: https://blog.cosine.ren/img/avatar.webp
+    #   color: '#ed788b'
+    # 你可以自己添加友链，这里留空或保留示例均可
+    # - site: 示例博客 A
+    #   url: https://example-a.com
+    #   owner: Alice
+    #   desc: 一个热爱技术的开发者
+    #   image: https://api.dicebear.com/7.x/avataaars/svg?seed=Alice
+    #   color: '#BEDCFF'
 
 # =============================================================================
 # Announcements
@@ -271,7 +259,7 @@ friends:
 # -----------------------------------------------------------------------------
 # 取消下方注释即可启用公告示例：
 # -----------------------------------------------------------------------------
-announcements:
+announcements: []
   # - id: welcome-2026 # 唯一标识符
   #   title: 2026 年新年快乐! # 公告标题
   #   content: 新年快乐! 感谢大家一直以来的支持~ # 公告内容
@@ -453,6 +441,23 @@ navigation:
 #   mobileMaxLayers: 移动端最大层数
 #   mobileMaxIterations: 移动端最大迭代次数
 
+christmas:
+  enabled: false # 总开关
+  # features: # 各功能独立开关
+  #   snowfall: true # 飘雪效果
+  #   christmasColorScheme: true # 圣诞配色
+  #   christmasCoverDecoration: true # 封面装饰
+  #   christmasHat: true # 头像圣诞帽
+  #   readingTimeSnow: true # 阅读时间雪花图标
+  # snowfall: # 飘雪参数配置
+  #   speed: 0.5 # 下落速度 (0-1)
+  #   intensity: 0.7 # 雪花密度 (0-1)
+  #   mobileIntensity: 0.4 # 移动端密度（建议较低）
+  #   maxLayers: 6 # 最大层数
+  #   maxIterations: 8 # 最大迭代次数
+  #   mobileMaxLayers: 4 # 移动端最大层数
+  #   mobileMaxIterations: 6 # 移动端最大迭代次数
+
 
 # =============================================================================
 # Comment System
@@ -511,69 +516,31 @@ navigation:
 #     recaptchaV3Key: reCAPTCHA v3 Key (可选)
 #     turnstileKey: Cloudflare Turnstile Key (可选)
 #     locale: 自定义语言显示 (可选)
-  # twikoo:
-    # envId: # Twikoo 环境 ID (腾讯云) 或 Vercel 环境地址 (必填)
-    # region: # 环境地域，默认为 ap-shanghai
-    # path: # 用于区分不同文章的自定义 js 路径，如果您的文章路径不是 location.pathname，需传此参数
-    # lang: # 语言 (默认: 'zh-CN')
+#   twikoo:
+#     envId: # Twikoo 环境 ID (腾讯云) 或 Vercel 环境地址 (必填)
+#     region: # 环境地域，默认为 ap-shanghai
+#     path: # 用于区分不同文章的自定义 js 路径，如果您的文章路径不是 location.pathname，需传此参数
+#     lang: # 语言 (默认: 'zh-CN')
 comment:
-  provider: none  # 'remark42' | 'giscus' | 'waline' | 'twikoo' | 'none'
+  provider: giscus   # 'remark42' | 'giscus' | 'waline' | 'twikoo' | 'none'
+  giscus:
+    repo: kssku/kssku-blog
+    repoId: R_kgDOSo4lbA
+    category: Announcements
+    categoryId: DIC_kwDOSo4lbM4C98Hz
+    mapping: pathname
+    reactionsEnabled: '1'
+    emitMetadata: '0'
+    inputPosition: bottom
+    lang: zh-CN
   # remark42:
   #   host: https://comment.example.com/
   #   siteId: your-site-id
-  # giscus:
-  #   repo: username/repo              # GitHub 仓库名 (owner/repo 格式)
-  #   repoId: R_kgDOxxxxxx             # 仓库 ID (从 giscus.app 获取)
-  #   category: Announcements          # Discussion 分类名称
-  #   categoryId: DIC_kwDOxxxxxx       # 分类 ID (从 giscus.app 获取)
-  #   mapping: pathname                # 映射方式
-  #   reactionsEnabled: '1'            # 启用 reactions ('0' | '1')
-  #   emitMetadata: '0'                # 发送元数据 ('0' | '1')
-  #   inputPosition: top               # 输入框位置 ('top' | 'bottom')
-  #   lang: zh-CN                      # 语言
-
   # waline:
-  #   serverURL: https://your-waline.vercel.app  # Waline 服务端地址 (必填)
-  #   lang: zh-CN                      # 语言 (默认: 'zh-CN')
-  #   dark: html.dark                  # 暗黑模式 (默认: 'html.dark')
-  #                                    # 可选: true (自适应) | false (禁用) | CSS选择器字符串
-  #   meta:                            # 评论者信息字段 (默认: ['nick', 'mail', 'link'])
-  #     - nick
-  #     - mail
-  #     - link
-  #   requiredMeta:                    # 必填字段 (默认: [])
-  #     - nick
-  #   login: enable                    # 登录模式 ('enable' | 'disable' | 'force', 默认: 'enable')
-  #   wordLimit: 0                     # 评论字数限制 (0 = 无限制, 默认: 0)
-  #                                    # 可选: 单个数字 | [min, max] 数组
-  #   pageSize: 10                     # 每页评论数 (默认: 10)
-  #   imageUploader: false             # 图片上传功能 (默认: false)
-  #   highlighter: true                # 代码高亮 (默认: true)
-  #   texRenderer: false               # LaTeX 渲染 (默认: false)
-  #   search: false                    # 搜索功能 (默认: false)
-  #   reaction: false                  # 文章反应功能 (默认: false)
-  #                                    # 可选: true | false | 字符串数组 (自定义反应图标)
-  #   emoji: true                      # 表情包配置 (默认: ['//unpkg.com/@waline/emojis@1.2.0/weibo'])
-  #                                    # 可选: true | false | 字符串/对象数组
-  #                                    # 预设表情包: '//unpkg.com/@waline/emojis@1.2.0/weibo'
-  #                                    #           '//unpkg.com/@waline/emojis@1.2.0/alus'
-  #                                    #           '//unpkg.com/@waline/emojis@1.2.0/bilibili'
-  #                                    #           '//unpkg.com/@waline/emojis@1.2.0/qq'
-  #                                    #           '//unpkg.com/@waline/emojis@1.2.0/tieba'
-  #                                    #           '//unpkg.com/@waline/emojis@1.2.0/tw-emoji'
-  #   commentSorting: latest           # 评论排序 ('latest' | 'oldest' | 'hottest', 默认: 'latest')
-  #   noCopyright: false               # 隐藏页脚版权信息 (默认: false)
-  #   comment: true                    # 评论数统计 (默认: true)
-  #   pageview: true                   # 页面访问量统计 (默认: true)
-  #   # recaptchaV3Key: ''             # reCAPTCHA v3 Key (可选)
-  #   # turnstileKey: ''               # Cloudflare Turnstile Key (可选)
-  #   # locale:                        # 自定义语言显示 (可选)
-  #   #   placeholder: '请留言...'      # 自定义输入框占位文本
-  twikoo:
-    envId: https://your-twikoo.vercel.app  # Twikoo 环境 ID (腾讯云) 或 Vercel 环境地址 (必填)
-    # region: ap-shanghai              # 环境地域，默认为 ap-shanghai
-    # path: location.pathname          # 用于区分不同文章的自定义 js 路径
-    # lang: zh-CN                     # 语言 (默认: 'zh-CN')
+  #   serverURL: https://your-waline.vercel.app
+  #   lang: zh-CN
+  # twikoo:
+  #   envId: https://your-twikoo.vercel.app
 
 # =============================================================================
 # Analytics (Umami)
@@ -588,7 +555,7 @@ comment:
 # -----------------------------------------------------------------------------
 analytics:
   umami:
-    enabled: true
+    enabled: false   # 我们使用 Cloudflare Web Analytics，所以关闭 Umami
     id: your-umami-id
     endpoint: https://stats.example.com
     # statistics_display:
@@ -617,35 +584,15 @@ seo:
     # host: true                       # 可选：添加 Host 指令（Yandex）
 
 # =============================================================================
-# Christmas/Seasonal Features
+# BGM Configuration (Global Background Music)
 # =============================================================================
 bgm:
-  enabled: true  # (有 audio 时自动启用，显式 false 可禁用)
+  enabled: true   # 全局背景音乐开关
   # metingApi: https://163.hyc.moe/  # Meting API 地址，默认为 https://163.hyc.moe/，推荐自部署
   audio:
-    - title: 最爱山山
+    - title: 博客背景音乐
       list:
-        - https://music.163.com/playlist?id=8676645748
-    - title: Love Vocaloid
-      list:
-        - https://music.163.com/playlist?id=8882890045
-
-christmas:
-  enabled: false # 总开关
-  # features: # 各功能独立开关
-  #   snowfall: true # 飘雪效果
-  #   christmasColorScheme: true # 圣诞配色
-  #   christmasCoverDecoration: true # 封面装饰
-  #   christmasHat: true # 头像圣诞帽
-  #   readingTimeSnow: true # 阅读时间雪花图标
-  # snowfall: # 飘雪参数配置
-  #   speed: 0.5 # 下落速度 (0-1)
-  #   intensity: 0.7 # 雪花密度 (0-1)
-  #   mobileIntensity: 0.4 # 移动端密度（建议较低）
-  #   maxLayers: 6 # 最大层数
-  #   maxIterations: 8 # 最大迭代次数
-  #   mobileMaxLayers: 4 # 移动端最大层数
-  #   mobileMaxIterations: 6 # 移动端最大迭代次数
+        - https://music.163.com/playlist?id=17889296286   # 你的歌单 ID
 
 # =============================================================================
 # Bangumi (Media Tracking)
@@ -657,7 +604,7 @@ christmas:
 #   icon: 导航图标，Iconify 格式（可选，默认：ri:bilibili-fill）
 # -----------------------------------------------------------------------------
 bangumi:
-  userId: cosine
+  userId: kssku   # 你的 Bangumi 用户名
   # label: 追番
   # icon: ri:bilibili-fill
 
@@ -676,7 +623,7 @@ bangumi:
 #     - urlTemplate: URL 模板，支持占位符 {path}（文件绝对路径）
 # -----------------------------------------------------------------------------
 dev:
-  localProjectPath: '/Users/yourname/path/to/astro-koharu' # 请修改为你的项目绝对路径
+  localProjectPath: 'C:/Users/59808/astro-koharu'   # 请修改为你的项目绝对路径
   contentRelativePath: 'src/content/blog'
   editors:
     - id: vscode
