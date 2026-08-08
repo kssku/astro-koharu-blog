@@ -525,9 +525,9 @@ comment:
   provider: giscus   # 'remark42' | 'giscus' | 'waline' | 'twikoo' | 'none'
   giscus:
     repo: kssku/kssku-blog
-    repoId: R_kgDOSo4lbA
+    repoId: R_kgDOTyJXeQ          # ✅ 更新为新仓库的 ID
     category: Announcements
-    categoryId: DIC_kwDOSo4lbM4C98Hz
+    categoryId: DIC_kwDOTyJXec4DC7qg  # ✅ 更新为新仓库的 ID
     mapping: pathname
     reactionsEnabled: '1'
     emitMetadata: '0'

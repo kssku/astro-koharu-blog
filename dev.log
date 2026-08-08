@@ -63,3 +63,4 @@ nohup: ignoring input
 18:09:52 [200] /tags/shoka 101ms
 18:09:52 [200] /tags/markdown 95ms
 18:09:52 [200] /post/infographic-guide 134ms
+ ELIFECYCLE  Command failed with exit code 143.
