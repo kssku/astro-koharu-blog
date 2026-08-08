@@ -11,7 +11,7 @@ tags:
   - 博客
   - 教程
 categories:
-  - 工具
+  - 教程
 ---
 
 一份完整的 astro-koharu 博客系统使用指南，帮助你快速上手并充分利用所有功能特性。
@@ -373,7 +373,7 @@ tags: # 标签列表
   - JavaScript
   - React
 categories: # 分类（见下方详细说明）
-  - 笔记
+  - 教程
 subtitle: 副标题 # 文章副标题
 catalog: true # 是否显示目录（默认 true）
 tocNumbering: true # 是否显示目录编号（默认 true）
@@ -428,7 +428,7 @@ astro-koharu 支持灵活的分类配置：
 
 ```yaml
 categories:
-  - 工具 # 或者 ['工具']
+  - 教程 # 或者 ['工具']
 ```
 
 对应 URL: `/categories/tools`（根据 `categoryMap` 映射）
@@ -1908,7 +1908,7 @@ title: 我的私密文章
 date: 2026-01-01
 password: mySecretPassword
 categories:
-  - 笔记
+  - 教程
 ---
 
 这里的所有内容都会被加密...
