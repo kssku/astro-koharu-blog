@@ -1,19 +1,18 @@
-version: '3.8'
-
 services:
   astro-koharu-dev:
     image: node:22-alpine
     working_dir: /app
-    ports:
-      - "4321:4321"
+    network_mode: host                # 使用宿主机网络
     volumes:
       - .:/app
       - /app/node_modules
     environment:
       - NODE_ENV=development
       - NODE_USE_ENV_PROXY=1
-      - HTTP_PROXY=http://host.docker.internal:7890
-      - HTTPS_PROXY=http://host.docker.internal:7890
-    command: sh -c "corepack enable && corepack prepare pnpm@10.28.2 --activate && pnpm install && pnpm dev --host 0.0.0.0"
-    extra_hosts:
-      - "host.docker.internal:host-gateway"
+      - HTTP_PROXY=http://127.0.0.1:7890
+      - HTTPS_PROXY=http://127.0.0.1:7890
+      - http_proxy=http://127.0.0.1:7890
+      - https_proxy=http://127.0.0.1:7890
+      # 可选：使用淘宝镜像加速（如果代理仍然慢）
+      - COREPACK_NPM_REGISTRY=https://registry.npmmirror.com
+    command: sh -c "npm install -g pnpm@10.28.2 && pnpm install --registry https://registry.npmmirror.com --network-concurrency 1 && pnpm dev --host 0.0.0.0"
