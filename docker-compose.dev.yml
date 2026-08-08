@@ -5,14 +5,15 @@ services:
     image: node:22-alpine
     working_dir: /app
     ports:
-      - "4321:4321"          # 开发服务器端口
+      - "4321:4321"
     volumes:
-      - .:/app               # 挂载整个项目
-      - /app/node_modules    # 忽略 node_modules（避免覆盖）
+      - .:/app
+      - /app/node_modules
     environment:
       - NODE_ENV=development
-      - http_proxy=http://host.docker.internal:7890
-      - https_proxy=http://host.docker.internal:7890
+      - NODE_USE_ENV_PROXY=1
+      - HTTP_PROXY=http://host.docker.internal:7890
+      - HTTPS_PROXY=http://host.docker.internal:7890
     command: sh -c "corepack enable && corepack prepare pnpm@10.28.2 --activate && pnpm install && pnpm dev --host 0.0.0.0"
     extra_hosts:
-      - "host.docker.internal:host-gateway"   # 让容器能访问宿主机的代理
+      - "host.docker.internal:host-gateway"
