@@ -1,0 +1,65 @@
+nohup: ignoring input
+
+> astro-koharu@6.2.2 dev /vol1/1000/docker/astro-koharu
+> pnpm koharu migrate --check && astro dev --host 0.0.0.0
+
+
+> astro-koharu@6.2.2 koharu /vol1/1000/docker/astro-koharu
+> npx tsx scripts/koharu.tsx migrate --check
+
+
+ koharu - astro-koharu CLI
+
+ 内容迁移检查
+ 已扫描 21 篇文章，需迁移 0 篇
+
+ 内容迁移检查通过
+
+18:07:54 [astro-mermaid] Setting up Mermaid integration
+18:07:54 [astro-mermaid] Existing rehype plugins:
+18:07:54 [astro-mermaid] Skipping ELK support
+18:07:55 [vite] connected.
+18:08:00 [types] Generated 1ms
+18:08:00 [vite] connected.
+18:08:06 [content] Syncing content
+18:08:06 [content] Synced content
+ astro  v7.1.3 ready in 16112 ms
+┃ Local    http://localhost:4321/
+┃ Network  http://192.168.31.124:4321/
+           http://172.17.0.1:4321/
+           http://172.26.0.1:4321/
+           http://10.0.0.1:4321/
+18:08:06 watching for file changes...
+18:09:30 [200] / 1523ms
+18:09:37 [200] /rss.xml 462ms
+18:09:38 [200] /bangumi 1109ms
+18:09:38 [200] /friends 1442ms
+18:09:39 [200] /categories 1800ms
+18:09:40 [200] /tags 494ms
+18:09:43 [200] /about 979ms
+18:09:43 [200] /music 979ms
+18:09:46 [200] /post/weekly-example-1 3678ms
+18:09:46 [200] /post/getting-started 2427ms
+18:09:47 [200] /weekly 10386ms
+18:09:47 [200] /categories/weekly 6219ms
+18:09:47 [200] /categories/tools 2871ms
+18:09:47 [200] /tags/周刊 6349ms
+18:09:47 [200] /tags/入门 106ms
+18:09:48 [200] /post/astro-6-migration 172ms
+18:09:48 [200] /categories/note/front-end 118ms
+18:09:48 [200] /tags/astro 111ms
+18:09:48 [200] /tags/迁移 103ms
+18:09:49 [200] /tags/content collections 104ms
+18:09:49 [200] /tags/vite 96ms
+18:09:49 [200] /tags/前端工程 103ms
+18:09:49 [200] /tags/shiki 97ms
+18:09:50 [200] /post/custom-keywords 144ms
+18:09:50 [200] /categories/note 104ms
+18:09:50 [200] /tags/教程 110ms
+18:09:51 [200] /post/note/encrypted-post-demo 144ms
+18:09:51 [200] /tags/加密 100ms
+18:09:51 [200] /tags/测试 112ms
+18:09:52 [200] /post/note/shoka-features 173ms
+18:09:52 [200] /tags/shoka 101ms
+18:09:52 [200] /tags/markdown 95ms
+18:09:52 [200] /post/infographic-guide 134ms
