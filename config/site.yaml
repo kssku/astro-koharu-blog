@@ -20,7 +20,7 @@ site:
   # 网站描述 - 用于 SEO，会显示在搜索结果中
   description: "动漫 · 游戏 · 日常 · 技术"
   # 头像路径 - 把头像图片放在 public/img/ 下，或使用 CDN 链接
-  avatar: "/img/avatar.webp"
+  avatar: "https://cdn.jsdmirror.com/gh/kssku/images@main/wallpapers/pink/portrait/avatar.webp"
   # 是否在页眉显示 LOGO
   showLogo: true
   # 作者全名 - 用于文章署名
