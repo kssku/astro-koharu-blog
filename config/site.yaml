@@ -9,18 +9,31 @@
 # 站点基本信息 - 这里填你博客的名字、描述等
 # =============================================================================
 site:
+  # 网站标题 - 显示在浏览器标签页、导航栏
   title: "红尘笑的小窝"
-  alternate: "hongchenxiao"
+  # 网站英文名 - 用于页脚、LOGO文字、@handle 等
+  alternate: "Redchen"
+  # 副标题 - 显示在主页标题下方
   subtitle: "WA 的一声就哭了"
+  # 作者简称 - 用于版权信息
   name: "kssku"
+  # 网站描述 - 用于 SEO，会显示在搜索结果中
   description: "动漫 · 游戏 · 日常 · 技术"
+  # 头像路径 - 把头像图片放在 public/img/ 下，或使用 CDN 链接
   avatar: "/img/avatar.webp"
+  # 是否在页眉显示 LOGO
   showLogo: true
+  # 作者全名 - 用于文章署名
   author: "kssku"
+  # 网站完整 URL - 用于 RSS、SEO，必须填你自己的域名
   url: "https://blog.kssku.top"
+  # 默认 OG 图片 - 分享链接时显示的预览图
   defaultOgImage: "/img/avatar.webp"
+  # 建站年份 - 用于页脚版权信息
   startYear: 2026
+  # 时区 - 控制文章发布时间的显示
   timezone: "Asia/Shanghai"
+  # SEO 关键词 - 帮助搜索引擎了解你的网站
   keywords:
     - 二次元
     - 游戏
@@ -32,13 +45,18 @@ site:
 # 多语言设置 - 不想用多语言可以只保留中文
 # =============================================================================
 i18n:
+  # 默认语言 - 不带 URL 前缀
   defaultLocale: zh
+  # 支持的语言列表
   locales:
     - code: zh
       label: 中文
 
 # =============================================================================
 # 分类映射 - 重要！决定文章分类的 URL 长什么样
+# =============================================================================
+# 格式: "中文分类名": "英文路径名"
+# 例如: 你的文章 categories: [随笔] 访问时 URL 是 /categories/life
 # =============================================================================
 categoryMap:
   随笔: life
@@ -47,36 +65,44 @@ categoryMap:
   动漫评测: anime
   笔记: note
   前端: front-end
-  教程: tutorial
 
 # =============================================================================
 # 首页精选分类 - 在首页显示的 4 个分类卡片
 # =============================================================================
+# 注意: link 要和 categoryMap 里的英文名对应
+# 图片链接已统一替换为国内 CDN 加速地址 (https://cdn.jsdmirror.com)
+# 如果你希望更换图片，只需修改链接中的颜色、方向或编号即可
+# =============================================================================
 featuredCategories:
   - link: life
     label: 随笔
-    image: /img/cover/2.webp
+    image: https://cdn.jsdmirror.com/gh/kssku/images@main/wallpapers/blue/landscape/1.webp
     description: 日常随想 · 生活记录
   - link: diary
     label: 日记
-    image: /img/cover/3.webp
+    image: https://cdn.jsdmirror.com/gh/kssku/images@main/wallpapers/green/landscape/1.webp
     description: 日常琐事 · 个人日记
   - link: game
     label: 游戏评测
-    image: /img/cover/1.webp
+    image: https://cdn.jsdmirror.com/gh/kssku/images@main/wallpapers/red/landscape/2.webp
     description: 游戏玩后感 · 推荐
   - link: anime
     label: 动漫评测
-    image: /img/cover/4.webp
+    image: https://cdn.jsdmirror.com/gh/kssku/images@main/wallpapers/pink/landscape/3.webp
     description: 动漫观后感 · 点评
 
 # =============================================================================
 # 系列文章 - 不需要就保持空数组 []
 # =============================================================================
+# 如果你有定期更新的系列（如周刊、书摘），可以在这里配置
+# =============================================================================
 featuredSeries: []
 
 # =============================================================================
 # 社交链接 - 显示在页脚
+# =============================================================================
+# 支持的平台: GitHub, Email, RSS, Twitter, Bilibili 等
+# 图标名称可从 https://icon-sets.iconify.design/ 查找
 # =============================================================================
 social:
   github:
@@ -93,7 +119,7 @@ social:
     color: '#ff6600'
 
 # =============================================================================
-# 友链页面
+# 友链页面 - /friends 页面
 # =============================================================================
 friends:
   intro:
@@ -108,10 +134,19 @@ friends:
         desc: 站点简介
         image: https://your-blog.com/avatar.jpg
         color: "#ffc0cb"
+  # 友链列表 - 在这里添加你的友链
   data: []
 
 # =============================================================================
 # 公告系统 - 不需要就保持空数组 []
+# =============================================================================
+# 如果要添加公告，格式如下:
+# announcements:
+#   - id: welcome
+#     title: 欢迎
+#     content: 欢迎来到我的博客！
+#     type: info
+#     priority: 10
 # =============================================================================
 announcements: []
 
@@ -119,32 +154,34 @@ announcements: []
 # 内容处理选项 - true=启用, false=关闭
 # =============================================================================
 content:
-  addBlankTarget: true
-  smoothScroll: true
-  addHeadingLevel: true
-  enhanceCodeBlock: true
-  enableCodeCopy: true
-  enableCodeFullscreen: true
-  enableLinkEmbed: true
-  enableCodePenEmbed: true
-  enableTweetEmbed: true
-  enableOGPreview: true
-  previewCacheTime: 30
-  lazyLoadEmbeds: true
-  postCardImagePosition: alternating
-  enableShokaContainers: true
-  enableShokaAttrs: true
-  enableShokaEffects: true
-  enableShokaSpoiler: true
-  enableShokaRuby: true
-  enableShokaHexoTags: true
-  enableMath: true
-  enableCodeMeta: true
-  enableQuiz: true
-  enableEncryptedBlock: true
+  addBlankTarget: true        # 外部链接在新窗口打开
+  smoothScroll: true          # 平滑滚动
+  addHeadingLevel: true       # 标题自动添加锚点链接
+  enhanceCodeBlock: true      # 代码块样式增强
+  enableCodeCopy: true        # 代码块显示复制按钮
+  enableCodeFullscreen: true  # 代码块显示全屏按钮
+  enableLinkEmbed: true       # 链接自动展示为卡片预览
+  enableCodePenEmbed: true    # CodePen 嵌入支持
+  enableTweetEmbed: true      # 推特嵌入支持
+  enableOGPreview: true       # OG 预览卡片
+  previewCacheTime: 30        # 预览缓存天数
+  lazyLoadEmbeds: true        # 懒加载嵌入内容
+  postCardImagePosition: alternating  # 文章卡片封面位置: left/right/alternating
+  
+  # Shoka 兼容功能 - 如果不需要可以改为 false
+  enableShokaContainers: true   # 提醒块、标签卡、折叠块 (::: ;;; +++)
+  enableShokaAttrs: true        # 文字颜色/样式 [文字]{.class}
+  enableShokaEffects: true      # 下划线 ++文字++ 高亮 ==文字==
+  enableShokaSpoiler: true      # 隐藏文字 !!文字!!
+  enableShokaRuby: true         # 注音 {文字^注音}
+  enableShokaHexoTags: true     # Hexo 标签 {% links %} {% media %}
+  enableMath: true              # 数学公式渲染 (KaTeX)
+  enableCodeMeta: true          # 代码块增强 (title, mark, command)
+  enableQuiz: true              # 练习题交互
+  enableEncryptedBlock: true    # 加密内容块
 
 # =============================================================================
-# 碎碎念 - 暂时关闭
+# 碎碎念 - 需要额外配置 KOHARU_SUITE_URL，暂时关闭
 # =============================================================================
 moments:
   enabled: false
@@ -152,20 +189,34 @@ moments:
 # =============================================================================
 # 导航菜单 - 顶部导航栏
 # =============================================================================
+# 格式:
+#   - name: 菜单显示名称
+#     path: 链接路径
+#     icon: 图标名称 (从 https://icon-sets.iconify.design/ 找)
+#   children: 有子菜单时使用
+# =============================================================================
 navigation:
   - name: 首页
     nameKey: nav.home
     path: /
     icon: ri:home-heart-fill
+
   - name: 随笔
     path: /categories/life
     icon: ri:book-line
+
   - name: 游戏
     path: /categories/game
     icon: ri:gamepad-line
+
   - name: 动漫
     path: /categories/anime
     icon: ri:film-line
+
+  - name: 教程
+    path: /categories/tutorial
+    icon: ri:book-open-line
+
   - name: 文章
     nameKey: nav.posts
     icon: ri:quill-pen-ai-fill
@@ -182,19 +233,23 @@ navigation:
         nameKey: nav.archives
         path: /archives
         icon: ri:archive-2-fill
+
   - name: 关于
     nameKey: nav.about
     path: /about
     icon: fa6-regular:circle-user
 
 # =============================================================================
-# 圣诞特效 - 关闭
+# 圣诞特效 - 关闭/开启圣诞装饰
 # =============================================================================
 christmas:
   enabled: false
 
 # =============================================================================
-# 评论系统 - Giscus
+# 评论系统 - 使用 Giscus (基于 GitHub Discussions)
+# =============================================================================
+# 需要先创建 GitHub 仓库并安装 giscus app
+# repoId 和 categoryId 从 https://giscus.app 获取
 # =============================================================================
 comment:
   provider: giscus
@@ -210,20 +265,23 @@ comment:
     lang: zh-CN
 
 # =============================================================================
-# 数据统计 - 关闭
+# 数据统计 - 关闭 (使用 Cloudflare Web Analytics 替代)
 # =============================================================================
 analytics:
   umami:
     enabled: false
 
 # =============================================================================
-# SEO 配置
+# SEO 优化 - 搜索引擎爬虫配置
 # =============================================================================
 seo:
   robots: {}
 
 # =============================================================================
-# 背景音乐
+# 背景音乐 - 页面右下角播放器
+# =============================================================================
+# 歌单 ID 从网易云音乐获取 (分享 → 复制链接)
+# 格式: https://music.163.com/playlist?id=你的歌单ID
 # =============================================================================
 bgm:
   enabled: true
@@ -233,16 +291,20 @@ bgm:
         - https://music.163.com/playlist?id=17889296286
 
 # =============================================================================
-# 追番 - Bangumi
+# 追番 - Bangumi 追番页面
+# =============================================================================
+# userId 填写你的 Bangumi 用户名
 # =============================================================================
 bangumi:
   userId: kssku
 
 # =============================================================================
-# 开发工具 - 本地编辑器跳转
+# 开发工具 - 本地编辑文章跳转
+# =============================================================================
+# localProjectPath 改成你电脑上项目的实际路径
 # =============================================================================
 dev:
-  localProjectPath: '/vol1/1000/docker/astro-koharu'
+  localProjectPath: 'W:\astro-koharu\'
   contentRelativePath: 'src/content/blog'
   editors:
     - id: vscode

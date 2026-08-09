@@ -1,34 +1,72 @@
 ---
 layout: ../layouts/PageLayout.astro
-title: "About"
-coverTitle: "关于我"
-date: 2025-01-03 01:01:33
-description: "关于我？"
+title: "关于我"
+description: "红尘笑的小窝 — 关于博主与这个博客"
+coverTitle: "关于 🌸"
+comments: true
 ---
 
-## 你好，这里是余弦
+## ✨ 关于本站
 
-[![github badge](https://img.shields.io/badge/dynamic/json?color=blue&label=Github&query=%24.data.totalSubs&url=https%3A%2F%2Fapi.spencerwoo.com%2Fsubstats%2F%3Fsource%3Dgithub%26queryKey%3Dyusixian)](https://github.com/yusixian)
+欢迎来到 **红尘笑的小窝** 🏠
 
-cosine = 余弦 = cos
+这是一个以 **二次元 · 游戏 · 动漫 · 日常** 为主题的私人博客。
 
-愿热情永存，愿热爱不灭，愿生活无憾
+最初因为想有一个属于自己的、可以自由写作的小角落而建立。没有太多复杂的想法，就是想写写自己喜欢的东西，分享一下日常的快乐和感动。
 
-> 我们 都只是无名之辈 \
-> 做你自己最喜欢的事 \
-> 像花一样 肆意绽放 \
-> 不去管 有没有人欣赏
+「红尘笑」这个名字，大概是希望在这纷纷扰扰的人间烟火里，也能笑着面对每一天吧。
 
-### 找到我
+---
 
-个人 Telegram 前端频道：日常碎碎念，偶尔掉落优质前端博文推荐、学习资源等
+## 👤 关于博主
 
-https://t.me/cosine_front_end
+这里是 **kssku**，你也可以叫我 **红尘笑**。
 
-Gitbook 前端学习记录
+- 🎮 喜欢玩游戏（RPG、独立游戏、休闲种田都爱）
+- 📺 喜欢看动漫（日常系、治愈系、奇幻系都看）
+- 💻 业余搞点前端技术，所以博客也是自己折腾的
+- 🐱 喜欢猫，虽然还没养（云吸猫选手）
+- 🌸 最近在努力保持「每天都写点东西」的习惯
 
-https://book.cosine.ren/
+**个人信条：**
+> 「人生苦短，用喜欢的方式度过就好。」
 
-[![GitHub State](https://git-stats.cosine.ren/api?username=yusixian&theme=dark&show_icons=true&hide_border=true)](https://github.com/anuraghazra/github-readme-stats)
+---
 
-[![GitHub Streak](https://github-readme-streak-stats-rust-tau.vercel.app?user=yusixian&theme=dark&date_format=%5BY%20%5DM%20&hide_border=true)](https://git.io/streak-stats)
+## 📚 这里有什么
+
+| 分类 | 内容 |
+|------|------|
+| **随笔** | 日常随想、生活碎碎念 |
+| **日记** | 个人日记、每日记录 |
+| **游戏评测** | 游戏玩后感、推荐与吐槽 |
+| **动漫评测** | 动漫观后感、作品推荐 |
+| **教程** | 技术笔记、主题使用指南 |
+
+虽然更新频率不太稳定（随缘更新型选手），但我会尽量保持写下去。
+
+---
+
+## 📬 联系我
+
+如果你也想交换友链、交流动漫/游戏，或者只是随便聊聊，欢迎通过以下方式找到我：
+
+- 📧 **邮箱**：`598089280@qq.com`
+- 🐙 **GitHub**：[@kssku](https://github.com/kssku)
+- 🌐 **站点**：[blog.kssku.top](https://blog.kssku.top)
+
+也欢迎在文章评论区留言交流 💬
+
+---
+
+## 💭 最后
+
+感谢你来到我的小窝。  
+希望这里能给你带来一点点温暖或乐趣。
+
+那么，请随意逛逛吧～ ✨
+
+> 「世界很大，能遇见就很好了。」  
+> —— 某个我也不知道在哪看到但很喜欢的句子
+
+🌸
