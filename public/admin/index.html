@@ -11,8 +11,8 @@
   
   <!-- 内联配置 -->
   <script>
-    // 等待 CMS 加载完成后初始化
-    document.addEventListener('DOMContentLoaded', function() {
+    // 等待 CMS 加载完成并初始化
+    window.addEventListener('load', function() {
       if (window.CMS) {
         CMS.init({
           config: {
