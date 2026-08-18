@@ -3,6 +3,7 @@ backend:
   repo: kssku/astro-koharu-blog
   branch: main
   base_url: https://blog.kssku.top
+  auth_endpoint: oauth/github
 
 media_folder: "public/images/uploads"
 public_folder: "/images/uploads"
