@@ -3,25 +3,19 @@ export const onRequest: PagesFunction = async (context) => {
   const url = new URL(request.url);
   const code = url.searchParams.get('code');
 
-  // 1. 处理无 code 的请求（OAuth 流程第一步，检查代理是否存活）
+  // 第一步：无 code 时，返回健康状态，让 Decap CMS 知道代理存活
   if (!code) {
-    return new Response(
-      JSON.stringify({
-        status: 'ok',
-        message: 'OAuth proxy is ready',
-      }),
-      {
-        status: 200,
-        headers: {
-          'Content-Type': 'application/json',
-          'Cache-Control': 'no-cache',
-          'Access-Control-Allow-Origin': '*',
-        },
+    return new Response(JSON.stringify({ status: 'ok' }), {
+      status: 200,
+      headers: {
+        'Content-Type': 'application/json',
+        'Cache-Control': 'no-cache',
+        'Access-Control-Allow-Origin': '*',
       },
-    );
+    });
   }
 
-  // 2. 处理有 code 的请求（OAuth 流程第二步，交换 token）
+  // 第二步：有 code 时，交换 access_token
   const clientId = env.GITHUB_CLIENT_ID;
   const clientSecret = env.GITHUB_CLIENT_SECRET;
 
@@ -60,18 +54,13 @@ export const onRequest: PagesFunction = async (context) => {
       },
     });
   } else {
-    return new Response(
-      JSON.stringify({
-        error: tokenData.error_description || 'Unknown error',
-      }),
-      {
-        status: 400,
-        headers: {
-          'Content-Type': 'application/json',
-          'Cache-Control': 'no-cache',
-          'Access-Control-Allow-Origin': '*',
-        },
+    return new Response(JSON.stringify({ error: tokenData.error_description || 'Unknown error' }), {
+      status: 400,
+      headers: {
+        'Content-Type': 'application/json',
+        'Cache-Control': 'no-cache',
+        'Access-Control-Allow-Origin': '*',
       },
-    );
+    });
   }
 };

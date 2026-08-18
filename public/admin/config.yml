@@ -3,7 +3,6 @@ backend:
   repo: kssku/astro-koharu-blog
   branch: main
   base_url: https://blog.kssku.top
-  auth_endpoint: oauth/github
 
 media_folder: "public/images/uploads"
 public_folder: "/images/uploads"
@@ -30,7 +29,7 @@ collections:
     folder: "src/content/blog/diary"
     create: true
     slug: "{{slug}}"
-    fields:
+    fields:  # 同上结构，略...
       - { label: "标题", name: "title", widget: "string" }
       - { label: "日期", name: "date", widget: "datetime", date_format: "YYYY-MM-DD", time_format: false }
       - { label: "简介", name: "description", widget: "text", required: false }
@@ -46,7 +45,7 @@ collections:
     folder: "src/content/blog/game"
     create: true
     slug: "{{slug}}"
-    fields:
+    fields:  # 同上
       - { label: "标题", name: "title", widget: "string" }
       - { label: "日期", name: "date", widget: "datetime", date_format: "YYYY-MM-DD", time_format: false }
       - { label: "简介", name: "description", widget: "text", required: false }
@@ -62,7 +61,7 @@ collections:
     folder: "src/content/blog/life"
     create: true
     slug: "{{slug}}"
-    fields:
+    fields:  # 同上
       - { label: "标题", name: "title", widget: "string" }
       - { label: "日期", name: "date", widget: "datetime", date_format: "YYYY-MM-DD", time_format: false }
       - { label: "简介", name: "description", widget: "text", required: false }

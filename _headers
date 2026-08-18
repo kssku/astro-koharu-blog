@@ -1,8 +1,7 @@
-/admin/*
-  X-Robots-Tag: noindex, nofollow
-  Cache-Control: no-cache, no-store, must-revalidate
+/admin/config.yml
+  Content-Type: application/x-yaml
+  Cache-Control: no-cache
 
 /oauth/*
-  X-Robots-Tag: noindex, nofollow
-  Cache-Control: no-cache, no-store, must-revalidate
   Access-Control-Allow-Origin: *
+  Cache-Control: no-cache
