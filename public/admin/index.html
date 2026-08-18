@@ -4,107 +4,97 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>博客管理后台</title>
+  <script>
+    // 全局配置对象，Decap CMS 加载时会自动读取
+    window.CMS_CONFIG = {
+      backend: {
+        name: 'github',
+        repo: 'kssku/astro-koharu-blog',
+        branch: 'main',
+        base_url: 'https://blog.kssku.top',
+        auth_endpoint: 'oauth/github'
+      },
+      media_folder: 'public/images/uploads',
+      public_folder: '/images/uploads',
+      collections: [
+        {
+          name: 'anime',
+          label: '动画',
+          folder: 'src/content/blog/anime',
+          create: true,
+          slug: '{{slug}}',
+          fields: [
+            { label: '标题', name: 'title', widget: 'string' },
+            { label: '日期', name: 'date', widget: 'datetime', date_format: 'YYYY-MM-DD', time_format: false },
+            { label: '简介', name: 'description', widget: 'text', required: false },
+            { label: '标签', name: 'tags', widget: 'list', default: [] },
+            { label: '分类', name: 'categories', widget: 'list', default: [] },
+            { label: '封面图', name: 'cover', widget: 'image', required: false },
+            { label: '自定义链接', name: 'link', widget: 'string', required: false },
+            { label: '显示目录', name: 'catalog', widget: 'boolean', default: false },
+            { label: '正文', name: 'body', widget: 'markdown' }
+          ]
+        },
+        {
+          name: 'diary',
+          label: '日记',
+          folder: 'src/content/blog/diary',
+          create: true,
+          slug: '{{slug}}',
+          fields: [
+            { label: '标题', name: 'title', widget: 'string' },
+            { label: '日期', name: 'date', widget: 'datetime', date_format: 'YYYY-MM-DD', time_format: false },
+            { label: '简介', name: 'description', widget: 'text', required: false },
+            { label: '标签', name: 'tags', widget: 'list', default: [] },
+            { label: '分类', name: 'categories', widget: 'list', default: [] },
+            { label: '封面图', name: 'cover', widget: 'image', required: false },
+            { label: '自定义链接', name: 'link', widget: 'string', required: false },
+            { label: '显示目录', name: 'catalog', widget: 'boolean', default: false },
+            { label: '正文', name: 'body', widget: 'markdown' }
+          ]
+        },
+        {
+          name: 'game',
+          label: '游戏',
+          folder: 'src/content/blog/game',
+          create: true,
+          slug: '{{slug}}',
+          fields: [
+            { label: '标题', name: 'title', widget: 'string' },
+            { label: '日期', name: 'date', widget: 'datetime', date_format: 'YYYY-MM-DD', time_format: false },
+            { label: '简介', name: 'description', widget: 'text', required: false },
+            { label: '标签', name: 'tags', widget: 'list', default: [] },
+            { label: '分类', name: 'categories', widget: 'list', default: [] },
+            { label: '封面图', name: 'cover', widget: 'image', required: false },
+            { label: '自定义链接', name: 'link', widget: 'string', required: false },
+            { label: '显示目录', name: 'catalog', widget: 'boolean', default: false },
+            { label: '正文', name: 'body', widget: 'markdown' }
+          ]
+        },
+        {
+          name: 'life',
+          label: '生活',
+          folder: 'src/content/blog/life',
+          create: true,
+          slug: '{{slug}}',
+          fields: [
+            { label: '标题', name: 'title', widget: 'string' },
+            { label: '日期', name: 'date', widget: 'datetime', date_format: 'YYYY-MM-DD', time_format: false },
+            { label: '简介', name: 'description', widget: 'text', required: false },
+            { label: '标签', name: 'tags', widget: 'list', default: [] },
+            { label: '分类', name: 'categories', widget: 'list', default: [] },
+            { label: '封面图', name: 'cover', widget: 'image', required: false },
+            { label: '自定义链接', name: 'link', widget: 'string', required: false },
+            { label: '显示目录', name: 'catalog', widget: 'boolean', default: false },
+            { label: '正文', name: 'body', widget: 'markdown' }
+          ]
+        }
+      ]
+    };
+  </script>
 </head>
 <body>
-  <!-- 加载 Decap CMS -->
+  <!-- 加载 Decap CMS，它会自动读取 window.CMS_CONFIG -->
   <script src="https://unpkg.com/decap-cms@^3.0.0/dist/decap-cms.js"></script>
-  
-  <!-- 内联配置 -->
-  <script>
-    // 等待 CMS 加载完成并初始化
-    window.addEventListener('load', function() {
-      if (window.CMS) {
-        CMS.init({
-          config: {
-            backend: {
-              name: 'github',
-              repo: 'kssku/astro-koharu-blog',
-              branch: 'main',
-              base_url: 'https://blog.kssku.top',
-              auth_endpoint: 'oauth/github'
-            },
-            media_folder: 'public/images/uploads',
-            public_folder: '/images/uploads',
-            collections: [
-              {
-                name: 'anime',
-                label: '动画',
-                folder: 'src/content/blog/anime',
-                create: true,
-                slug: '{{slug}}',
-                fields: [
-                  { label: '标题', name: 'title', widget: 'string' },
-                  { label: '日期', name: 'date', widget: 'datetime', date_format: 'YYYY-MM-DD', time_format: false },
-                  { label: '简介', name: 'description', widget: 'text', required: false },
-                  { label: '标签', name: 'tags', widget: 'list', default: [] },
-                  { label: '分类', name: 'categories', widget: 'list', default: [] },
-                  { label: '封面图', name: 'cover', widget: 'image', required: false },
-                  { label: '自定义链接', name: 'link', widget: 'string', required: false },
-                  { label: '显示目录', name: 'catalog', widget: 'boolean', default: false },
-                  { label: '正文', name: 'body', widget: 'markdown' }
-                ]
-              },
-              {
-                name: 'diary',
-                label: '日记',
-                folder: 'src/content/blog/diary',
-                create: true,
-                slug: '{{slug}}',
-                fields: [
-                  { label: '标题', name: 'title', widget: 'string' },
-                  { label: '日期', name: 'date', widget: 'datetime', date_format: 'YYYY-MM-DD', time_format: false },
-                  { label: '简介', name: 'description', widget: 'text', required: false },
-                  { label: '标签', name: 'tags', widget: 'list', default: [] },
-                  { label: '分类', name: 'categories', widget: 'list', default: [] },
-                  { label: '封面图', name: 'cover', widget: 'image', required: false },
-                  { label: '自定义链接', name: 'link', widget: 'string', required: false },
-                  { label: '显示目录', name: 'catalog', widget: 'boolean', default: false },
-                  { label: '正文', name: 'body', widget: 'markdown' }
-                ]
-              },
-              {
-                name: 'game',
-                label: '游戏',
-                folder: 'src/content/blog/game',
-                create: true,
-                slug: '{{slug}}',
-                fields: [
-                  { label: '标题', name: 'title', widget: 'string' },
-                  { label: '日期', name: 'date', widget: 'datetime', date_format: 'YYYY-MM-DD', time_format: false },
-                  { label: '简介', name: 'description', widget: 'text', required: false },
-                  { label: '标签', name: 'tags', widget: 'list', default: [] },
-                  { label: '分类', name: 'categories', widget: 'list', default: [] },
-                  { label: '封面图', name: 'cover', widget: 'image', required: false },
-                  { label: '自定义链接', name: 'link', widget: 'string', required: false },
-                  { label: '显示目录', name: 'catalog', widget: 'boolean', default: false },
-                  { label: '正文', name: 'body', widget: 'markdown' }
-                ]
-              },
-              {
-                name: 'life',
-                label: '生活',
-                folder: 'src/content/blog/life',
-                create: true,
-                slug: '{{slug}}',
-                fields: [
-                  { label: '标题', name: 'title', widget: 'string' },
-                  { label: '日期', name: 'date', widget: 'datetime', date_format: 'YYYY-MM-DD', time_format: false },
-                  { label: '简介', name: 'description', widget: 'text', required: false },
-                  { label: '标签', name: 'tags', widget: 'list', default: [] },
-                  { label: '分类', name: 'categories', widget: 'list', default: [] },
-                  { label: '封面图', name: 'cover', widget: 'image', required: false },
-                  { label: '自定义链接', name: 'link', widget: 'string', required: false },
-                  { label: '显示目录', name: 'catalog', widget: 'boolean', default: false },
-                  { label: '正文', name: 'body', widget: 'markdown' }
-                ]
-              }
-            ]
-          }
-        });
-      } else {
-        console.error('Decap CMS 未加载，请检查网络或刷新重试。');
-      }
-    });
-  </script>
 </body>
 </html>
