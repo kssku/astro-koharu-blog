@@ -7,8 +7,9 @@
 </head>
 <body>
   <script type="module">
-    import CMS from 'https://cdn.jsdelivr.net/npm/sveltia-cms@latest/dist/sveltia-cms.js';
+    import CMS from 'https://cdn.jsdelivr.net/npm/sveltia-cms@0.34.0/dist/sveltia-cms.js';
 
+    // 内联配置（完全替代 config.yml）
     CMS.init({
       config: {
         backend: {
@@ -16,6 +17,7 @@
           repo: 'kssku/astro-koharu-blog',
           branch: 'main',
           base_url: 'https://blog.kssku.top',
+          auth_endpoint: 'oauth/github'
         },
         media_folder: 'public/images/uploads',
         public_folder: '/images/uploads',
@@ -35,8 +37,8 @@
               { label: '封面图', name: 'cover', widget: 'image', required: false },
               { label: '自定义链接', name: 'link', widget: 'string', required: false },
               { label: '显示目录', name: 'catalog', widget: 'boolean', default: false },
-              { label: '正文', name: 'body', widget: 'markdown' },
-            ],
+              { label: '正文', name: 'body', widget: 'markdown' }
+            ]
           },
           {
             name: 'diary',
@@ -53,8 +55,8 @@
               { label: '封面图', name: 'cover', widget: 'image', required: false },
               { label: '自定义链接', name: 'link', widget: 'string', required: false },
               { label: '显示目录', name: 'catalog', widget: 'boolean', default: false },
-              { label: '正文', name: 'body', widget: 'markdown' },
-            ],
+              { label: '正文', name: 'body', widget: 'markdown' }
+            ]
           },
           {
             name: 'game',
@@ -71,8 +73,8 @@
               { label: '封面图', name: 'cover', widget: 'image', required: false },
               { label: '自定义链接', name: 'link', widget: 'string', required: false },
               { label: '显示目录', name: 'catalog', widget: 'boolean', default: false },
-              { label: '正文', name: 'body', widget: 'markdown' },
-            ],
+              { label: '正文', name: 'body', widget: 'markdown' }
+            ]
           },
           {
             name: 'life',
@@ -89,11 +91,11 @@
               { label: '封面图', name: 'cover', widget: 'image', required: false },
               { label: '自定义链接', name: 'link', widget: 'string', required: false },
               { label: '显示目录', name: 'catalog', widget: 'boolean', default: false },
-              { label: '正文', name: 'body', widget: 'markdown' },
-            ],
-          },
-        ],
-      },
+              { label: '正文', name: 'body', widget: 'markdown' }
+            ]
+          }
+        ]
+      }
     });
   </script>
 </body>
