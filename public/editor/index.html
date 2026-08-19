@@ -55,23 +55,6 @@
     .status.success {
       color: #2d7a2d;
     }
-    .file-list {
-      margin: 10px 0;
-      padding: 10px;
-      background: #f0f0f0;
-      border-radius: 4px;
-      max-height: 200px;
-      overflow-y: auto;
-    }
-    .file-list li {
-      list-style: none;
-      padding: 4px 8px;
-      cursor: pointer;
-      border-radius: 3px;
-    }
-    .file-list li:hover {
-      background: #ddd;
-    }
   </style>
 </head>
 <body>
@@ -123,6 +106,7 @@
     const loginBtn = document.getElementById('login-btn');
     const loginStatus = document.getElementById('login-status');
     const editorArea = document.getElementById('editor-area');
+    const authStatus = document.getElementById('auth-status');
     const fileSelect = document.getElementById('file-select');
     const saveBtn = document.getElementById('save-btn');
     const refreshBtn = document.getElementById('refresh-btn');
@@ -158,8 +142,13 @@
           const data = resp.data;
           if (data.access_token) {
             accessToken = data.access_token;
+            localStorage.setItem('github_token', accessToken);
+            // 清除 URL 中的 code 参数
             window.history.replaceState({}, document.title, window.location.pathname);
-            await fetchUserAndInit();
+            await fetchUserAndInit();  // 自动进入编辑器
+            // 强制显示编辑器区域（登录按钮隐藏）
+            authStatus.style.display = 'none';
+            editorArea.style.display = 'block';
           } else {
             setLoginStatus('授权失败: ' + (data.error || '未知错误'), 'error');
           }
@@ -176,6 +165,8 @@
       if (token) {
         accessToken = token;
         await fetchUserAndInit();
+        authStatus.style.display = 'none';
+        editorArea.style.display = 'block';
       }
     }
 
@@ -186,8 +177,8 @@
         });
         user = resp.data;
         setLoginStatus(`已登录: ${user.login}`, 'success');
-        localStorage.setItem('github_token', accessToken);
-        loginBtn.style.display = 'none';
+        // 隐藏登录按钮，显示编辑器
+        authStatus.style.display = 'none';
         editorArea.style.display = 'block';
         await loadFileList();
         initEditor();
@@ -195,7 +186,7 @@
         setLoginStatus('登录验证失败: ' + e.message, 'error');
         localStorage.removeItem('github_token');
         accessToken = null;
-        loginBtn.style.display = 'inline-block';
+        authStatus.style.display = 'block';
         editorArea.style.display = 'none';
       }
     }
@@ -301,11 +292,17 @@
         });
         setStatus('✅ 已成功提交并推送到 GitHub！', 'success');
         await loadFileList();
+        // 更新当前文件 sha（从列表重新获取，但简单起见先关闭保存按钮）
+        saveBtn.disabled = true;
+        currentFile = null;
+        fileSelect.value = '';
+        easyMDE.value('');
       } catch (e) {
         setStatus('提交失败: ' + (e.response?.data?.message || e.message), 'error');
       }
     }
 
+    // --- 事件绑定 ---
     loginBtn.addEventListener('click', login);
     saveBtn.addEventListener('click', saveAndPush);
     refreshBtn.addEventListener('click', async function() {
@@ -317,6 +314,7 @@
       setStatus('已刷新', 'success');
     });
 
+    // --- 启动 ---
     handleOAuthCallback();
 
   })();
