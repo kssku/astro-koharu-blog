@@ -5,7 +5,7 @@ import PageLayout from '../layouts/PageLayout.astro';
 const frontmatter = {
   title: '我的 Steam 游戏库',
   coverTitle: '🎮 我的 Steam 游戏库',
-  description: '通过 Steam Web API 自动同步的全部游戏列表',
+  description: '通过 Steam Web API 自动同步的游戏列表，支持排序与筛选',
   comments: false,
 };
 
@@ -13,7 +13,7 @@ const frontmatter = {
 const STEAM_API_KEY = process.env.STEAM_API_KEY;
 const STEAM_ID = '76561199521447257';
 
-let games = [];
+let allGames = [];
 let error = null;
 
 if (!STEAM_API_KEY) {
@@ -26,11 +26,10 @@ if (!STEAM_API_KEY) {
     if (!listRes.ok) throw new Error(`HTTP ${listRes.status}`);
     const listJson = await listRes.json();
     const rawGames = listJson.response.games || [];
-    // 按游玩时长降序
     rawGames.sort((a, b) => b.playtime_forever - a.playtime_forever);
 
-    // 2. 为前 100 个游戏获取详细信息（封面、价格、评分等）
-    const topGames = rawGames.slice(0, 100);
+    // 2. 为前 200 个游戏获取详细信息（封面、价格、评分等）
+    const topGames = rawGames.slice(0, 200);
     const enriched = await Promise.all(
       topGames.map(async (game) => {
         try {
@@ -42,7 +41,6 @@ if (!STEAM_API_KEY) {
             ...game,
             price: detail?.priceOverview?.final ? `$${(detail.priceOverview.final / 100).toFixed(2)}` : null,
             rating: detail?.metacritic?.score || null,
-            // 修正字段名：header_image（下划线），并添加备用链接
             headerImage: detail?.header_image || `https://steamcdn-a.akamaihd.net/steam/apps/${game.appid}/header.jpg`,
             genres:
               detail?.genres
@@ -52,7 +50,6 @@ if (!STEAM_API_KEY) {
             releaseDate: detail?.releaseDate?.date || null,
           };
         } catch (e) {
-          // 单个游戏失败时，使用备用封面图
           return {
             ...game,
             price: null,
@@ -63,12 +60,15 @@ if (!STEAM_API_KEY) {
         }
       }),
     );
-    games = enriched;
+    allGames = enriched;
   } catch (e) {
     console.error('Steam API 请求失败:', e);
     error = e.message;
   }
 }
+
+const gamesJson = JSON.stringify(allGames);
+const totalCount = allGames.length;
 ---
 
 <PageLayout frontmatter={frontmatter}>
@@ -80,73 +80,225 @@ if (!STEAM_API_KEY) {
             <div class="error-msg">⚠️ 加载失败：{error}</div>
         ) : (
             <>
-                <p class="game-count">共 <strong>{games.length}</strong> 款游戏（显示前 100 款）</p>
-                <ul class="game-list">
-                    {games.map(game => (
-                        <li class="game-item">
-                            <div class="game-image-wrap">
-                                {game.headerImage ? (
-                                    <img src={game.headerImage} alt={game.name} loading="lazy" />
-                                ) : (
-                                    <div class="game-image-placeholder">🎮</div>
-                                )}
-                            </div>
-                            <div class="game-info">
-                                <span class="game-name">{game.name}</span>
-                                {game.price && <span class="game-price">{game.price}</span>}
-                                {game.rating && (
-                                    <span class={`game-rating ${game.rating >= 75 ? 'good' : game.rating >= 50 ? 'mid' : 'bad'}`}>
-                                        ⭐ <span class="score">{game.rating}</span> / 100
-                                    </span>
-                                )}
-                                {game.genres && <span class="game-genres">{game.genres}</span>}
-                                <span class="game-playtime">🕐 总游玩 {Math.round(game.playtime_forever / 60)} 小时</span>
-                                {game.rtime_last_played && (
-                                    <span class="game-last-played">
-                                        最近游玩：{new Date(game.rtime_last_played * 1000).toLocaleDateString('zh-CN')}
-                                    </span>
-                                )}
-                            </div>
-                        </li>
-                    ))}
-                </ul>
+                <!-- 控制栏 -->
+                <div class="steam-controls">
+                    <div class="controls-left">
+                        <span class="game-count">共 <strong id="total-count">{totalCount}</strong> 款游戏</span>
+                        <span id="filtered-count" style="display:none;">，显示 <strong>0</strong> 款</span>
+                    </div>
+                    <div class="controls-right">
+                        <select id="sort-select">
+                            <option value="playtime">总游玩时间 (高→低)</option>
+                            <option value="recent">最近游玩 (新→旧)</option>
+                            <option value="name">游戏名称 (A→Z)</option>
+                        </select>
+                        <label class="filter-label">
+                            <input type="checkbox" id="filter-month" />
+                            仅显示最近一个月玩过的
+                        </label>
+                    </div>
+                </div>
+
+                <div id="game-list-container">
+                    <!-- 由 JavaScript 渲染 -->
+                </div>
             </>
         )}
     </div>
 </PageLayout>
 
+<script>
+    const gamesData = JSON.parse(`{gamesJson}`);
+
+    let currentSort = 'playtime';
+    let filterMonth = false;
+
+    const container = document.getElementById('game-list-container');
+    const sortSelect = document.getElementById('sort-select');
+    const filterCheckbox = document.getElementById('filter-month');
+    const totalCountEl = document.getElementById('total-count');
+    const filteredCountEl = document.getElementById('filtered-count');
+
+    function renderGames() {
+        let filtered = gamesData;
+        if (filterMonth) {
+            const now = Date.now() / 1000;
+            const oneMonthAgo = now - 30 * 24 * 60 * 60;
+            filtered = filtered.filter(game => game.rtime_last_played && game.rtime_last_played >= oneMonthAgo);
+        }
+
+        const sorted = [...filtered];
+        switch (currentSort) {
+            case 'playtime':
+                sorted.sort((a, b) => b.playtime_forever - a.playtime_forever);
+                break;
+            case 'recent':
+                sorted.sort((a, b) => (b.rtime_last_played || 0) - (a.rtime_last_played || 0));
+                break;
+            case 'name':
+                sorted.sort((a, b) => a.name.localeCompare(b.name));
+                break;
+        }
+
+        filteredCountEl.style.display = filterMonth ? 'inline' : 'none';
+        if (filterMonth) {
+            filteredCountEl.innerHTML = `，显示 <strong>${sorted.length}</strong> 款`;
+        }
+
+        if (sorted.length === 0) {
+            container.innerHTML = `<p class="empty-msg">没有找到符合条件游戏 😢</p>`;
+            return;
+        }
+
+        let html = `<ul class="game-list">`;
+        for (const game of sorted) {
+            html += `
+                <li class="game-item">
+                    <div class="game-image-wrap">
+                        ${game.headerImage
+                            ? `<img src="${game.headerImage}" alt="${game.name}" loading="lazy" />`
+                            : `<div class="game-image-placeholder">🎮</div>`
+                        }
+                    </div>
+                    <div class="game-info">
+                        <span class="game-name">${game.name}</span>
+                        ${game.price ? `<span class="game-price">${game.price}</span>` : ''}
+                        ${game.rating ? `
+                            <span class="game-rating ${game.rating >= 75 ? 'good' : game.rating >= 50 ? 'mid' : 'bad'}">
+                                ⭐ <span class="score">${game.rating}</span> / 100
+                            </span>
+                        ` : ''}
+                        ${game.genres ? `<span class="game-genres">${game.genres}</span>` : ''}
+                        <span class="game-playtime">🕐 总游玩 ${Math.round(game.playtime_forever / 60)} 小时</span>
+                        ${game.rtime_last_played ? `
+                            <span class="game-last-played">
+                                最近游玩：${new Date(game.rtime_last_played * 1000).toLocaleDateString('zh-CN')}
+                            </span>
+                        ` : ''}
+                    </div>
+                </li>
+            `;
+        }
+        html += `</ul>`;
+        container.innerHTML = html;
+    }
+
+    sortSelect.addEventListener('change', (e) => {
+        currentSort = e.target.value;
+        renderGames();
+    });
+
+    filterCheckbox.addEventListener('change', (e) => {
+        filterMonth = e.target.checked;
+        renderGames();
+    });
+
+    renderGames();
+</script>
+
 <style>
-/* ===== Steam 深色风格 ===== */
+/* ===== 粉白主题 ===== */
 .steam-container {
     max-width: 1200px;
     margin: 0 auto;
     padding: 20px 24px;
-    background: #1a1e26;
-    border-radius: 12px;
+    background: #fcf4f9;          /* 暖白粉背景 */
+    border-radius: 16px;
     min-height: 60vh;
+    box-shadow: 0 4px 20px rgba(255, 107, 157, 0.08);
 }
 
 .steam-container h1 {
     font-size: 2rem;
     font-weight: 700;
-    color: #e8edf5;
+    color: #4a2c4a;               /* 深紫粉 */
     margin-bottom: 4px;
     letter-spacing: 0.5px;
 }
 
 .subtitle {
-    color: #8b9bb4;
+    color: #a88290;               /* 粉灰 */
     font-size: 0.95rem;
     margin-top: 0;
     margin-bottom: 24px;
-    border-bottom: 1px solid #2a313c;
+    border-bottom: 1px solid #f0dce6;
     padding-bottom: 16px;
 }
 
-.game-count {
-    color: #8b9bb4;
-    font-size: 0.9rem;
+/* ===== 控制栏 ===== */
+.steam-controls {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 12px;
     margin-bottom: 20px;
+    padding: 12px 16px;
+    background: #fff5fa;          /* 极淡粉 */
+    border-radius: 12px;
+    border: 1px solid #f0dce6;
+}
+
+.controls-left {
+    display: flex;
+    align-items: baseline;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.game-count {
+    color: #a88290;
+    font-size: 0.95rem;
+    margin: 0;
+}
+
+.game-count strong {
+    color: #4a2c4a;
+}
+
+#filtered-count {
+    color: #a88290;
+    font-size: 0.9rem;
+}
+
+.controls-right {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    flex-wrap: wrap;
+}
+
+.controls-right select {
+    background: #fff5fa;
+    color: #4a2c4a;
+    border: 1px solid #f0dce6;
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-size: 0.9rem;
+    cursor: pointer;
+    outline: none;
+    transition: all 0.2s;
+}
+
+.controls-right select:hover {
+    background: #ffeaf2;
+    border-color: #ff8aae;
+}
+
+.filter-label {
+    color: #4a2c4a;
+    font-size: 0.9rem;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    cursor: pointer;
+}
+
+.filter-label input[type="checkbox"] {
+    width: 16px;
+    height: 16px;
+    accent-color: #ff6b9d;
+    cursor: pointer;
 }
 
 /* ===== 游戏网格 ===== */
@@ -162,24 +314,25 @@ if (!STEAM_API_KEY) {
 .game-item {
     display: flex;
     flex-direction: column;
-    background: #262d38;
-    border-radius: 8px;
+    background: #ffffff;
+    border-radius: 12px;
     overflow: hidden;
+    box-shadow: 0 2px 12px rgba(255, 107, 157, 0.10);
     transition: transform 0.25s ease, box-shadow 0.3s ease;
     cursor: default;
-    position: relative;
+    border: 1px solid #f8eaf0;
 }
 
 .game-item:hover {
-    transform: translateY(-6px);
-    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.6), 0 0 30px rgba(102, 192, 244, 0.08);
+    transform: translateY(-4px);
+    box-shadow: 0 8px 30px rgba(255, 107, 157, 0.18), 0 0 20px rgba(255, 107, 157, 0.06);
 }
 
 .game-image-wrap {
     position: relative;
     width: 100%;
     padding-top: 56.25%;
-    background: #1a1e26;
+    background: #fcf4f9;
     overflow: hidden;
     flex-shrink: 0;
 }
@@ -195,7 +348,7 @@ if (!STEAM_API_KEY) {
 }
 
 .game-item:hover .game-image-wrap img {
-    transform: scale(1.05);
+    transform: scale(1.03);
 }
 
 .game-image-placeholder {
@@ -208,8 +361,8 @@ if (!STEAM_API_KEY) {
     align-items: center;
     justify-content: center;
     font-size: 48px;
-    background: #1a1e26;
-    color: #4a5568;
+    background: #fcf4f9;
+    color: #d4b0c0;
 }
 
 .game-info {
@@ -223,7 +376,7 @@ if (!STEAM_API_KEY) {
 .game-name {
     font-weight: 600;
     font-size: 0.95rem;
-    color: #e8edf5;
+    color: #3d2a3d;
     line-height: 1.3;
     display: -webkit-box;
     -webkit-line-clamp: 2;
@@ -234,12 +387,12 @@ if (!STEAM_API_KEY) {
 .game-price {
     font-size: 0.9rem;
     font-weight: 600;
-    color: #67c1f5;
+    color: #e84393;             /* 粉色价格 */
     margin-top: 2px;
 }
 
 .game-price.free {
-    color: #8b9bb4;
+    color: #a88290;
     font-weight: 400;
 }
 
@@ -248,43 +401,50 @@ if (!STEAM_API_KEY) {
     align-items: center;
     gap: 4px;
     font-size: 0.8rem;
-    color: #8b9bb4;
+    color: #a88290;
     margin-top: 2px;
 }
 
 .game-rating .score {
-    color: #e8edf5;
+    color: #4a2c4a;
     font-weight: 600;
 }
 
-.game-rating.good .score { color: #6bce7a; }
-.game-rating.mid .score { color: #f5c842; }
-.game-rating.bad .score { color: #e86b6b; }
+.game-rating.good .score { color: #2e7d32; }
+.game-rating.mid .score { color: #f5a623; }
+.game-rating.bad .score { color: #d32f2f; }
 
 .game-genres {
     font-size: 0.75rem;
-    color: #6a7a8f;
+    color: #b89aa8;
     margin-top: 2px;
 }
 
 .game-playtime {
     font-size: 0.75rem;
-    color: #6a7a8f;
+    color: #b89aa8;
     margin-top: 4px;
 }
 
 .game-last-played {
     font-size: 0.7rem;
-    color: #4a5a6f;
+    color: #ccb0be;
 }
 
 .error-msg {
-    color: #e86b6b;
-    background: rgba(232, 107, 107, 0.12);
+    color: #d32f2f;
+    background: #fce4ec;
     padding: 12px 16px;
     border-radius: 8px;
     margin: 20px 0;
-    border: 1px solid rgba(232, 107, 107, 0.2);
+    border: 1px solid #f8d7da;
+}
+
+.empty-msg {
+    color: #a88290;
+    text-align: center;
+    padding: 40px 0;
+    font-size: 1.1rem;
 }
 
 /* ===== 响应式 ===== */
@@ -301,6 +461,14 @@ if (!STEAM_API_KEY) {
     }
     .game-name {
         font-size: 0.85rem;
+    }
+    .steam-controls {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 8px;
+    }
+    .controls-left, .controls-right {
+        justify-content: center;
     }
 }
 </style>
