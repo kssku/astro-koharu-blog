@@ -5,32 +5,33 @@ import PageLayout from '../layouts/PageLayout.astro';
 const frontmatter = {
   title: '我的 Steam 游戏库',
   coverTitle: '🎮 我的 Steam 游戏库',
-  description: '通过 Steam Web API 自动同步的游戏列表',
+  description: '通过 Steam Web API 自动同步的全部游戏列表',
   comments: false,
 };
 
+// -------- 配置 --------
 const STEAM_API_KEY = process.env.STEAM_API_KEY;
 const STEAM_ID = '76561199521447257';
 
-let allGames = [];
+let games = [];
 let error = null;
 
 if (!STEAM_API_KEY) {
-  error = '未配置 Steam API Key';
+  error = '未配置 Steam API Key，请在 Cloudflare Pages 环境变量中设置 STEAM_API_KEY。';
 } else {
   try {
-    // 获取游戏列表
-    const url = `https://api.steampowered.com/IPlayerService/GetOwnedGames/v1/?key=${STEAM_API_KEY}&steamid=${STEAM_ID}&include_appinfo=true&include_played_free_games=true&format=json`;
-    const res = await fetch(url);
-    const json = await res.json();
-    allGames = json.response.games || [];
+    // 1. 获取拥有的游戏列表
+    const listUrl = `https://api.steampowered.com/IPlayerService/GetOwnedGames/v1/?key=${STEAM_API_KEY}&steamid=${STEAM_ID}&include_appinfo=true&include_played_free_games=true&format=json`;
+    const listRes = await fetch(listUrl);
+    if (!listRes.ok) throw new Error(`HTTP ${listRes.status}`);
+    const listJson = await listRes.json();
+    const rawGames = listJson.response.games || [];
     // 按游玩时长降序
-    allGames.sort((a, b) => b.playtime_forever - a.playtime_forever);
+    rawGames.sort((a, b) => b.playtime_forever - a.playtime_forever);
 
-    // ---- 获取每个游戏的详情（封面、价格、评分） ----
-    // 这里保留之前获取详情的逻辑
-    // 为了速度，可以只对前 100 个游戏获取详情，或者全部获取
-    const topGames = allGames.slice(0, 200); // 最多获取200个游戏的详情
+    // 2. 为前 100 个游戏获取详细信息（封面、价格、评分等）
+    //    限制数量是为了避免 API 限流，100 个对个人博客通常足够
+    const topGames = rawGames.slice(0, 100);
     const enriched = await Promise.all(
       topGames.map(async (game) => {
         try {
@@ -48,22 +49,20 @@ if (!STEAM_API_KEY) {
                 ?.map((g) => g.description)
                 .slice(0, 2)
                 .join(', ') || null,
+            releaseDate: detail?.releaseDate?.date || null,
           };
-        } catch {
-          return { ...game, price: null, rating: null, headerImage: null };
+        } catch (e) {
+          // 单个游戏失败不影响整体
+          return { ...game, price: null, rating: null, headerImage: null, genres: null };
         }
       }),
     );
-    allGames = enriched;
+    games = enriched;
   } catch (e) {
+    console.error('Steam API 请求失败:', e);
     error = e.message;
   }
 }
-
-// 获取全部游戏数量
-const totalGames = allGames.length;
-// 将数据序列化为 JSON 供客户端使用
-const gamesJson = JSON.stringify(allGames);
 ---
 
 <PageLayout frontmatter={frontmatter}>
@@ -75,110 +74,43 @@ const gamesJson = JSON.stringify(allGames);
             <div class="error-msg">⚠️ 加载失败：{error}</div>
         ) : (
             <>
-                <div class="steam-controls">
-                    <p class="game-count">共 <strong>{totalGames}</strong> 款游戏</p>
-                    <div class="pagination-controls">
-                        <span id="page-info">第 1 页</span>
-                        <button id="prev-btn" disabled>上一页</button>
-                        <button id="next-btn">下一页</button>
-                        <select id="page-size-select">
-                            <option value="12">每页 12</option>
-                            <option value="24" selected>每页 24</option>
-                            <option value="48">每页 48</option>
-                            <option value="96">每页 96</option>
-                        </select>
-                    </div>
-                </div>
-
-                <div id="game-list-container">
-                    <!-- 由 JavaScript 渲染 -->
-                </div>
+                <p class="game-count">共 <strong>{games.length}</strong> 款游戏（显示前 100 款）</p>
+                <ul class="game-list">
+                    {games.map(game => (
+                        <li class="game-item">
+                            <div class="game-image-wrap">
+                                {game.headerImage ? (
+                                    <img src={game.headerImage} alt={game.name} loading="lazy" />
+                                ) : (
+                                    <div class="game-image-placeholder">🎮</div>
+                                )}
+                            </div>
+                            <div class="game-info">
+                                <span class="game-name">{game.name}</span>
+                                {game.price && <span class="game-price">{game.price}</span>}
+                                {game.rating && (
+                                    <span class={`game-rating ${game.rating >= 75 ? 'good' : game.rating >= 50 ? 'mid' : 'bad'}`}>
+                                        ⭐ <span class="score">{game.rating}</span> / 100
+                                    </span>
+                                )}
+                                {game.genres && <span class="game-genres">{game.genres}</span>}
+                                <span class="game-playtime">🕐 总游玩 {Math.round(game.playtime_forever / 60)} 小时</span>
+                                {game.rtime_last_played && (
+                                    <span class="game-last-played">
+                                        最近游玩：{new Date(game.rtime_last_played * 1000).toLocaleDateString('zh-CN')}
+                                    </span>
+                                )}
+                            </div>
+                        </li>
+                    ))}
+                </ul>
             </>
         )}
     </div>
 </PageLayout>
 
-<!-- 注入游戏数据到客户端 -->
-<script>
-    const gamesData = JSON.parse(`{gamesJson}`);
-    let currentPage = 1;
-    let pageSize = 24;
-
-    function renderGames() {
-        const container = document.getElementById('game-list-container');
-        const start = (currentPage - 1) * pageSize;
-        const end = start + pageSize;
-        const pageGames = gamesData.slice(start, end);
-
-        if (pageGames.length === 0 && currentPage > 1) {
-            currentPage--;
-            renderGames();
-            return;
-        }
-
-        // 更新分页信息
-        const totalPages = Math.ceil(gamesData.length / pageSize);
-        document.getElementById('page-info').textContent = `第 ${currentPage} 页 / 共 ${totalPages} 页`;
-        document.getElementById('prev-btn').disabled = currentPage <= 1;
-        document.getElementById('next-btn').disabled = currentPage >= totalPages;
-
-        // 渲染游戏卡片
-        container.innerHTML = `
-            <ul class="game-list">
-                ${pageGames.map(game => `
-                    <li class="game-item">
-                        <div class="game-image-wrap">
-                            ${game.headerImage
-                                ? `<img src="${game.headerImage}" alt="${game.name}" loading="lazy" />`
-                                : `<div class="game-image-placeholder">🎮</div>`
-                            }
-                        </div>
-                        <div class="game-info">
-                            <span class="game-name">${game.name}</span>
-                            ${game.price ? `<span class="game-price">${game.price}</span>` : ''}
-                            ${game.rating ? `
-                                <span class="game-rating ${game.rating >= 75 ? 'good' : game.rating >= 50 ? 'mid' : 'bad'}">
-                                    ⭐ <span class="score">${game.rating}</span> / 100
-                                </span>
-                            ` : ''}
-                            ${game.genres ? `<span class="game-genres">${game.genres}</span>` : ''}
-                            <span class="game-playtime">🕐 总游玩 ${Math.round(game.playtime_forever / 60)} 小时</span>
-                            ${game.rtime_last_played ? `
-                                <span class="game-last-played">最近游玩：${new Date(game.rtime_last_played * 1000).toLocaleDateString('zh-CN')}</span>
-                            ` : ''}
-                        </div>
-                    </li>
-                `).join('')}
-            </ul>
-        `;
-    }
-
-    // 绑定事件
-    document.getElementById('prev-btn').addEventListener('click', () => {
-        if (currentPage > 1) {
-            currentPage--;
-            renderGames();
-        }
-    });
-    document.getElementById('next-btn').addEventListener('click', () => {
-        const totalPages = Math.ceil(gamesData.length / pageSize);
-        if (currentPage < totalPages) {
-            currentPage++;
-            renderGames();
-        }
-    });
-    document.getElementById('page-size-select').addEventListener('change', (e) => {
-        pageSize = parseInt(e.target.value);
-        currentPage = 1;
-        renderGames();
-    });
-
-    // 初始渲染
-    renderGames();
-</script>
-
 <style>
-/* ===== 与之前相同的 Steam 深色风格 CSS ===== */
+/* ===== Steam 深色风格 ===== */
 .steam-container {
     max-width: 1200px;
     margin: 0 auto;
@@ -205,62 +137,10 @@ const gamesJson = JSON.stringify(allGames);
     padding-bottom: 16px;
 }
 
-/* ===== 控制栏 ===== */
-.steam-controls {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    flex-wrap: wrap;
-    gap: 12px;
-    margin-bottom: 20px;
-}
-
 .game-count {
     color: #8b9bb4;
     font-size: 0.9rem;
-    margin: 0;
-}
-
-.pagination-controls {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    flex-wrap: wrap;
-}
-
-.pagination-controls span {
-    color: #8b9bb4;
-    font-size: 0.9rem;
-}
-
-.pagination-controls button {
-    background: #2a313c;
-    color: #e8edf5;
-    border: none;
-    padding: 6px 16px;
-    border-radius: 4px;
-    cursor: pointer;
-    font-size: 0.85rem;
-    transition: background 0.2s;
-}
-
-.pagination-controls button:hover:not(:disabled) {
-    background: #3a4555;
-}
-
-.pagination-controls button:disabled {
-    opacity: 0.4;
-    cursor: not-allowed;
-}
-
-.pagination-controls select {
-    background: #2a313c;
-    color: #e8edf5;
-    border: none;
-    padding: 6px 12px;
-    border-radius: 4px;
-    font-size: 0.85rem;
-    cursor: pointer;
+    margin-bottom: 20px;
 }
 
 /* ===== 游戏网格 ===== */
@@ -272,6 +152,7 @@ const gamesJson = JSON.stringify(allGames);
     list-style: none;
 }
 
+/* ===== 游戏卡片 ===== */
 .game-item {
     display: flex;
     flex-direction: column;
@@ -400,6 +281,7 @@ const gamesJson = JSON.stringify(allGames);
     border: 1px solid rgba(232, 107, 107, 0.2);
 }
 
+/* ===== 响应式 ===== */
 @media (max-width: 640px) {
     .steam-container {
         padding: 12px 16px;
@@ -413,13 +295,6 @@ const gamesJson = JSON.stringify(allGames);
     }
     .game-name {
         font-size: 0.85rem;
-    }
-    .steam-controls {
-        flex-direction: column;
-        align-items: stretch;
-    }
-    .pagination-controls {
-        justify-content: center;
     }
 }
 </style>
