@@ -103,98 +103,104 @@ const totalCount = allGames.length;
     </div>
 </PageLayout>
 
-<!-- 使用 define:vars 将数据注入为客户端变量，自动安全转义 -->
+<!-- 使用 define:vars 安全注入数据，并包裹在 IIFE 中避免顶层 return -->
 <script define:vars={{ games: allGames }}>
-    // games 是来自服务器的数据，类型为数组
-    if (!games || !games.length) {
-        document.getElementById('game-list-container').innerHTML = '<p class="empty-msg">没有游戏数据，请检查配置。</p>';
-        return;
-    }
-
-    let currentSort = 'playtime';
-    let filterMonth = false;
-
-    const container = document.getElementById('game-list-container');
-    const sortSelect = document.getElementById('sort-select');
-    const filterCheckbox = document.getElementById('filter-month');
-    const totalCountEl = document.getElementById('total-count');
-    const filteredCountEl = document.getElementById('filtered-count');
-
-    function renderGames() {
-        let filtered = games;
-        if (filterMonth) {
-            const now = Date.now() / 1000;
-            const oneMonthAgo = now - 30 * 24 * 60 * 60;
-            filtered = filtered.filter(game => game.rtime_last_played && game.rtime_last_played >= oneMonthAgo);
-        }
-
-        const sorted = [...filtered];
-        switch (currentSort) {
-            case 'playtime':
-                sorted.sort((a, b) => b.playtime_forever - a.playtime_forever);
-                break;
-            case 'recent':
-                sorted.sort((a, b) => (b.rtime_last_played || 0) - (a.rtime_last_played || 0));
-                break;
-            case 'name':
-                sorted.sort((a, b) => a.name.localeCompare(b.name));
-                break;
-        }
-
-        filteredCountEl.style.display = filterMonth ? 'inline' : 'none';
-        if (filterMonth) {
-            filteredCountEl.innerHTML = `，显示 <strong>${sorted.length}</strong> 款`;
-        }
-
-        if (sorted.length === 0) {
-            container.innerHTML = `<p class="empty-msg">没有找到符合条件游戏 😢</p>`;
+    (function() {
+        if (!games || !games.length) {
+            const container = document.getElementById('game-list-container');
+            if (container) {
+                container.innerHTML = '<p class="empty-msg">没有游戏数据，请检查配置。</p>';
+            }
             return;
         }
 
-        let html = `<ul class="game-list">`;
-        for (const game of sorted) {
-            html += `
-                <li class="game-item">
-                    <div class="game-image-wrap">
-                        ${game.headerImage
-                            ? `<img src="${game.headerImage}" alt="${game.name}" loading="lazy" />`
-                            : `<div class="game-image-placeholder">🎮</div>`
-                        }
-                    </div>
-                    <div class="game-info">
-                        <span class="game-name">${game.name}</span>
-                        ${game.price ? `<span class="game-price">${game.price}</span>` : ''}
-                        ${game.rating ? `
-                            <span class="game-rating ${game.rating >= 75 ? 'good' : game.rating >= 50 ? 'mid' : 'bad'}">
-                                ⭐ <span class="score">${game.rating}</span> / 100
-                            </span>
-                        ` : ''}
-                        ${game.genres ? `<span class="game-genres">${game.genres}</span>` : ''}
-                        <span class="game-playtime">🕐 总游玩 ${Math.round(game.playtime_forever / 60)} 小时</span>
-                        ${game.rtime_last_played ? `
-                            <span class="game-last-played">
-                                最近游玩：${new Date(game.rtime_last_played * 1000).toLocaleDateString('zh-CN')}
-                            </span>
-                        ` : ''}
-                    </div>
-                </li>
-            `;
+        let currentSort = 'playtime';
+        let filterMonth = false;
+
+        const container = document.getElementById('game-list-container');
+        const sortSelect = document.getElementById('sort-select');
+        const filterCheckbox = document.getElementById('filter-month');
+        const totalCountEl = document.getElementById('total-count');
+        const filteredCountEl = document.getElementById('filtered-count');
+
+        function renderGames() {
+            let filtered = games;
+            if (filterMonth) {
+                const now = Date.now() / 1000;
+                const oneMonthAgo = now - 30 * 24 * 60 * 60;
+                filtered = filtered.filter(game => game.rtime_last_played && game.rtime_last_played >= oneMonthAgo);
+            }
+
+            const sorted = [...filtered];
+            switch (currentSort) {
+                case 'playtime':
+                    sorted.sort((a, b) => b.playtime_forever - a.playtime_forever);
+                    break;
+                case 'recent':
+                    sorted.sort((a, b) => (b.rtime_last_played || 0) - (a.rtime_last_played || 0));
+                    break;
+                case 'name':
+                    sorted.sort((a, b) => a.name.localeCompare(b.name));
+                    break;
+            }
+
+            if (filteredCountEl) {
+                filteredCountEl.style.display = filterMonth ? 'inline' : 'none';
+                if (filterMonth) {
+                    filteredCountEl.innerHTML = `，显示 <strong>${sorted.length}</strong> 款`;
+                }
+            }
+
+            if (sorted.length === 0) {
+                container.innerHTML = `<p class="empty-msg">没有找到符合条件游戏 😢</p>`;
+                return;
+            }
+
+            let html = `<ul class="game-list">`;
+            for (const game of sorted) {
+                html += `
+                    <li class="game-item">
+                        <div class="game-image-wrap">
+                            ${game.headerImage
+                                ? `<img src="${game.headerImage}" alt="${game.name}" loading="lazy" />`
+                                : `<div class="game-image-placeholder">🎮</div>`
+                            }
+                        </div>
+                        <div class="game-info">
+                            <span class="game-name">${game.name}</span>
+                            ${game.price ? `<span class="game-price">${game.price}</span>` : ''}
+                            ${game.rating ? `
+                                <span class="game-rating ${game.rating >= 75 ? 'good' : game.rating >= 50 ? 'mid' : 'bad'}">
+                                    ⭐ <span class="score">${game.rating}</span> / 100
+                                </span>
+                            ` : ''}
+                            ${game.genres ? `<span class="game-genres">${game.genres}</span>` : ''}
+                            <span class="game-playtime">🕐 总游玩 ${Math.round(game.playtime_forever / 60)} 小时</span>
+                            ${game.rtime_last_played ? `
+                                <span class="game-last-played">
+                                    最近游玩：${new Date(game.rtime_last_played * 1000).toLocaleDateString('zh-CN')}
+                                </span>
+                            ` : ''}
+                        </div>
+                    </li>
+                `;
+            }
+            html += `</ul>`;
+            container.innerHTML = html;
         }
-        html += `</ul>`;
-        container.innerHTML = html;
-    }
 
-    sortSelect.addEventListener('change', (e) => {
-        currentSort = e.target.value;
+        if (sortSelect) sortSelect.addEventListener('change', (e) => {
+            currentSort = e.target.value;
+            renderGames();
+        });
+
+        if (filterCheckbox) filterCheckbox.addEventListener('change', (e) => {
+            filterMonth = e.target.checked;
+            renderGames();
+        });
+
         renderGames();
-    });
-
-    filterCheckbox.addEventListener('change', (e) => {
-        filterMonth = e.target.checked;
-        renderGames();
-    });
-
-    renderGames();
+    })();
 </script>
 
 <style>
@@ -203,7 +209,7 @@ const totalCount = allGames.length;
     max-width: 1200px;
     margin: 0 auto;
     padding: 20px 24px;
-    background: #fcf4f9;          /* 暖白粉背景 */
+    background: #fcf4f9;
     border-radius: 16px;
     min-height: 60vh;
     box-shadow: 0 4px 20px rgba(107, 197, 245, 0.08);
@@ -212,21 +218,20 @@ const totalCount = allGames.length;
 .steam-container h1 {
     font-size: 2rem;
     font-weight: 700;
-    color: #4a2c4a;               /* 深紫粉 */
+    color: #4a2c4a;
     margin-bottom: 4px;
     letter-spacing: 0.5px;
 }
 
 .subtitle {
-    color: #a88290;               /* 粉灰 */
+    color: #a88290;
     font-size: 0.95rem;
     margin-top: 0;
     margin-bottom: 24px;
-    border-bottom: 1px solid #dce8f0; /* 淡蓝灰边框 */
+    border-bottom: 1px solid #dce8f0;
     padding-bottom: 16px;
 }
 
-/* ===== 控制栏 ===== */
 .steam-controls {
     display: flex;
     justify-content: space-between;
@@ -235,7 +240,7 @@ const totalCount = allGames.length;
     gap: 12px;
     margin-bottom: 20px;
     padding: 12px 16px;
-    background: #f0f8ff;          /* 淡蓝白背景 */
+    background: #f0f8ff;
     border-radius: 12px;
     border: 1px solid #dce8f0;
 }
@@ -282,7 +287,7 @@ const totalCount = allGames.length;
 }
 
 .controls-right select:hover {
-    background: #e5f4ff;          /* 淡蓝悬停 */
+    background: #e5f4ff;
     border-color: #6bc5f5;
 }
 
@@ -298,11 +303,10 @@ const totalCount = allGames.length;
 .filter-label input[type="checkbox"] {
     width: 16px;
     height: 16px;
-    accent-color: #6bc5f5;       /* 淡蓝复选框 */
+    accent-color: #6bc5f5;
     cursor: pointer;
 }
 
-/* ===== 游戏网格 ===== */
 .game-list {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
@@ -311,7 +315,6 @@ const totalCount = allGames.length;
     list-style: none;
 }
 
-/* ===== 游戏卡片 ===== */
 .game-item {
     display: flex;
     flex-direction: column;
@@ -388,7 +391,7 @@ const totalCount = allGames.length;
 .game-price {
     font-size: 0.9rem;
     font-weight: 600;
-    color: #4a9eff;              /* 清新蓝价格 */
+    color: #4a9eff;
     margin-top: 2px;
 }
 
@@ -448,7 +451,6 @@ const totalCount = allGames.length;
     font-size: 1.1rem;
 }
 
-/* ===== 响应式 ===== */
 @media (max-width: 640px) {
     .steam-container {
         padding: 12px 16px;
