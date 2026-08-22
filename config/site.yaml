@@ -234,11 +234,14 @@ navigation:
         path: /archives
         icon: ri:archive-2-fill
 
+  - name: Steam          # 👈 新增
+    path: /steam         # 👈 对应 src/pages/steam.astro
+    icon: ri:steam-fill  # 👈 或者用 fa-brands:steam
+
   - name: 关于
     nameKey: nav.about
     path: /about
     icon: fa6-regular:circle-user
-
 # =============================================================================
 # 圣诞特效 - 关闭/开启圣诞装饰
 # =============================================================================

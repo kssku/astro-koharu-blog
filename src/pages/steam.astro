@@ -1,0 +1,163 @@
+---
+// src/pages/steam.astro
+import PageLayout from '../layouts/PageLayout.astro';
+
+// 从环境变量读取 API Key（安全！）
+const STEAM_API_KEY = process.env.STEAM_API_KEY;
+const STEAM_ID = '76561199521447257'; // 这里直接填你的64位ID（数字）
+
+// ---------- 数据获取（构建时执行） ----------
+let games = [];
+let error = null;
+
+if (!STEAM_API_KEY) {
+  error = '未配置 Steam API Key，请在 Cloudflare Pages 环境变量中设置 STEAM_API_KEY。';
+} else {
+  try {
+    const url = `https://api.steampowered.com/IPlayerService/GetOwnedGames/v1/?key=${STEAM_API_KEY}&steamid=${STEAM_ID}&include_appinfo=true&include_played_free_games=true&format=json`;
+    const res = await fetch(url);
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const json = await res.json();
+    games = json.response.games || [];
+    // 按游玩时长降序，取前30个
+    games.sort((a, b) => b.playtime_forever - a.playtime_forever);
+    games = games.slice(0, 30);
+  } catch (e) {
+    console.error('Steam API 请求失败:', e);
+    error = e.message;
+  }
+}
+---
+
+<PageLayout title="我的 Steam 游戏库">
+    <div class="steam-container">
+        <h1>🎮 我的 Steam 游戏库</h1>
+        <p class="subtitle">数据通过 Steam Web API 自动获取，在每次构建时更新。</p>
+
+        {error ? (
+            <div class="error-msg">⚠️ 加载失败：{error}</div>
+        ) : (
+            <>
+                <p class="game-count">共 <strong>{games.length}</strong> 款游戏（显示前30款）</p>
+                <ul class="game-list">
+                    {games.map(game => (
+                        <li class="game-item">
+                            {game.img_icon_url ? (
+                                <img 
+                                    src={`https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/${game.appid}/${game.img_icon_url}.jpg`}
+                                    alt={game.name}
+                                    class="game-icon"
+                                    loading="lazy"
+                                />
+                            ) : (
+                                <div class="game-icon-placeholder">🎮</div>
+                            )}
+                            <div class="game-info">
+                                <span class="game-name">{game.name}</span>
+                                <span class="game-playtime">总游玩 {Math.round(game.playtime_forever / 60)} 小时</span>
+                                {game.rtime_last_played && (
+                                    <span class="game-last-played">
+                                        最近游玩：{new Date(game.rtime_last_played * 1000).toLocaleDateString('zh-CN')}
+                                    </span>
+                                )}
+                            </div>
+                        </li>
+                    ))}
+                </ul>
+            </>
+        )}
+    </div>
+</PageLayout>
+
+<style>
+.steam-container {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 20px;
+}
+.subtitle {
+    color: var(--text-color-secondary, #666);
+    font-size: 0.95rem;
+}
+.error-msg {
+    color: #d32f2f;
+    background: #ffebee;
+    padding: 12px 16px;
+    border-radius: 8px;
+    margin: 20px 0;
+}
+.game-count {
+    margin: 16px 0;
+}
+.game-list {
+    display: grid;
+    gap: 12px;
+    padding: 0;
+    list-style: none;
+}
+.game-item {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 12px 16px;
+    background: var(--bg-color-secondary, #f5f5f5);
+    border-radius: 8px;
+    transition: background 0.2s;
+}
+.game-item:hover {
+    background: var(--bg-color-tertiary, #e8e8e8);
+}
+.game-icon {
+    width: 48px;
+    height: 48px;
+    border-radius: 4px;
+    flex-shrink: 0;
+    background: #2a2a2a;
+}
+.game-icon-placeholder {
+    width: 48px;
+    height: 48px;
+    border-radius: 4px;
+    background: #2a2a2a;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 24px;
+    flex-shrink: 0;
+}
+.game-info {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 8px 16px;
+    flex: 1;
+}
+.game-name {
+    font-weight: 600;
+    font-size: 1.05rem;
+}
+.game-playtime {
+    color: var(--text-color-secondary, #666);
+    font-size: 0.9rem;
+}
+.game-last-played {
+    color: var(--text-color-secondary, #666);
+    font-size: 0.85rem;
+    margin-left: auto;
+}
+:global(.dark) .game-item {
+    background: var(--bg-color-secondary, #2a2a2a);
+}
+:global(.dark) .game-item:hover {
+    background: var(--bg-color-tertiary, #3a3a3a);
+}
+@media (max-width: 640px) {
+    .game-item {
+        flex-wrap: wrap;
+    }
+    .game-last-played {
+        margin-left: 0;
+        width: 100%;
+    }
+}
+</style>
