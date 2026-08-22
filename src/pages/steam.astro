@@ -3,10 +3,10 @@
 import PageLayout from '../layouts/PageLayout.astro';
 
 const frontmatter = {
-  title: '我的 Steam 游戏库',
-  coverTitle: '🎮 我的 Steam 游戏库',
-  description: '通过 Steam Web API 自动同步的游戏列表，支持排序与筛选',
-  comments: false,
+    title: '我的 Steam 游戏库',
+    coverTitle: '🎮 我的 Steam 游戏库',
+    description: '通过 Steam Web API 自动同步的游戏列表，支持排序与筛选',
+    comments: false,
 };
 
 // -------- 配置 --------
@@ -17,58 +17,53 @@ let allGames = [];
 let error = null;
 
 if (!STEAM_API_KEY) {
-  error = '未配置 Steam API Key，请在 Cloudflare Pages 环境变量中设置 STEAM_API_KEY。';
+    error = '未配置 Steam API Key，请在 Cloudflare Pages 环境变量中设置 STEAM_API_KEY。';
 } else {
-  try {
-    const listUrl = `https://api.steampowered.com/IPlayerService/GetOwnedGames/v1/?key=${STEAM_API_KEY}&steamid=${STEAM_ID}&include_appinfo=true&include_played_free_games=true&format=json`;
-    const listRes = await fetch(listUrl);
-    if (!listRes.ok) throw new Error(`HTTP ${listRes.status}`);
-    const listJson = await listRes.json();
-    const rawGames = listJson.response.games || [];
-    rawGames.sort((a, b) => b.playtime_forever - a.playtime_forever);
+    try {
+        const listUrl = `https://api.steampowered.com/IPlayerService/GetOwnedGames/v1/?key=${STEAM_API_KEY}&steamid=${STEAM_ID}&include_appinfo=true&include_played_free_games=true&format=json`;
+        const listRes = await fetch(listUrl);
+        if (!listRes.ok) throw new Error(`HTTP ${listRes.status}`);
+        const listJson = await listRes.json();
+        const rawGames = listJson.response.games || [];
+        rawGames.sort((a, b) => b.playtime_forever - a.playtime_forever);
 
-    const topGames = rawGames.slice(0, 200);
-    const enriched = await Promise.all(
-      topGames.map(async (game) => {
-        try {
-          const detailUrl = `https://store.steampowered.com/api/appdetails?appids=${game.appid}`;
-          const detailRes = await fetch(detailUrl);
-          const detailJson = await detailRes.json();
-          const detail = detailJson[game.appid]?.data;
-          return {
-            ...game,
-            price: detail?.priceOverview?.final ? `$${(detail.priceOverview.final / 100).toFixed(2)}` : null,
-            rating: detail?.metacritic?.score || null,
-            headerImage: detail?.header_image || `https://steamcdn-a.akamaihd.net/steam/apps/${game.appid}/header.jpg`,
-            genres:
-              detail?.genres
-                ?.map((g) => g.description)
-                .slice(0, 2)
-                .join(', ') || null,
-            releaseDate: detail?.releaseDate?.date || null,
-          };
-        } catch (e) {
-          return {
-            ...game,
-            price: null,
-            rating: null,
-            headerImage: `https://steamcdn-a.akamaihd.net/steam/apps/${game.appid}/header.jpg`,
-            genres: null,
-          };
-        }
-      }),
-    );
-    allGames = enriched;
-  } catch (e) {
-    console.error('Steam API 请求失败:', e);
-    error = e.message;
-  }
+        const topGames = rawGames.slice(0, 200);
+        const enriched = await Promise.all(
+            topGames.map(async (game) => {
+                try {
+                    const detailUrl = `https://store.steampowered.com/api/appdetails?appids=${game.appid}`;
+                    const detailRes = await fetch(detailUrl);
+                    const detailJson = await detailRes.json();
+                    const detail = detailJson[game.appid]?.data;
+                    return {
+                        ...game,
+                        price: detail?.priceOverview?.final
+                            ? `$${(detail.priceOverview.final / 100).toFixed(2)}`
+                            : null,
+                        rating: detail?.metacritic?.score || null,
+                        headerImage: detail?.header_image || `https://steamcdn-a.akamaihd.net/steam/apps/${game.appid}/header.jpg`,
+                        genres: detail?.genres?.map(g => g.description).slice(0, 2).join(', ') || null,
+                        releaseDate: detail?.releaseDate?.date || null,
+                    };
+                } catch (e) {
+                    return {
+                        ...game,
+                        price: null,
+                        rating: null,
+                        headerImage: `https://steamcdn-a.akamaihd.net/steam/apps/${game.appid}/header.jpg`,
+                        genres: null,
+                    };
+                }
+            })
+        );
+        allGames = enriched;
+    } catch (e) {
+        console.error('Steam API 请求失败:', e);
+        error = e.message;
+    }
 }
 
 const totalCount = allGames.length;
-
-// 生成安全的 JavaScript 变量赋值语句（直接输出到页面）
-const gamesDataScript = `const gamesData = ${JSON.stringify(allGames)};`;
 ---
 
 <PageLayout frontmatter={frontmatter}>
@@ -78,6 +73,8 @@ const gamesDataScript = `const gamesData = ${JSON.stringify(allGames)};`;
 
         {error ? (
             <div class="error-msg">⚠️ 加载失败：{error}</div>
+        ) : allGames.length === 0 ? (
+            <div class="error-msg">⚠️ 没有获取到任何游戏数据，请检查 Steam 个人资料是否公开。</div>
         ) : (
             <>
                 <div class="steam-controls">
@@ -106,134 +103,130 @@ const gamesDataScript = `const gamesData = ${JSON.stringify(allGames)};`;
     </div>
 </PageLayout>
 
-<!-- 直接注入数据，无需二次解析 -->
-<script>{gamesDataScript}</script>
+<!-- 使用 define:vars 将数据注入为客户端变量，自动安全转义 -->
+<script define:vars={{ games: allGames }}>
+    // games 是来自服务器的数据，类型为数组
+    if (!games || !games.length) {
+        document.getElementById('game-list-container').innerHTML = '<p class="empty-msg">没有游戏数据，请检查配置。</p>';
+        return;
+    }
 
-<!-- 渲染逻辑 -->
-<script>
-    (function() {
-        // gamesData 已在上一脚本中定义
-        if (typeof gamesData === 'undefined' || !gamesData.length) {
-            document.getElementById('game-list-container').innerHTML = '<p class="empty-msg">没有游戏数据，请检查配置。</p>';
+    let currentSort = 'playtime';
+    let filterMonth = false;
+
+    const container = document.getElementById('game-list-container');
+    const sortSelect = document.getElementById('sort-select');
+    const filterCheckbox = document.getElementById('filter-month');
+    const totalCountEl = document.getElementById('total-count');
+    const filteredCountEl = document.getElementById('filtered-count');
+
+    function renderGames() {
+        let filtered = games;
+        if (filterMonth) {
+            const now = Date.now() / 1000;
+            const oneMonthAgo = now - 30 * 24 * 60 * 60;
+            filtered = filtered.filter(game => game.rtime_last_played && game.rtime_last_played >= oneMonthAgo);
+        }
+
+        const sorted = [...filtered];
+        switch (currentSort) {
+            case 'playtime':
+                sorted.sort((a, b) => b.playtime_forever - a.playtime_forever);
+                break;
+            case 'recent':
+                sorted.sort((a, b) => (b.rtime_last_played || 0) - (a.rtime_last_played || 0));
+                break;
+            case 'name':
+                sorted.sort((a, b) => a.name.localeCompare(b.name));
+                break;
+        }
+
+        filteredCountEl.style.display = filterMonth ? 'inline' : 'none';
+        if (filterMonth) {
+            filteredCountEl.innerHTML = `，显示 <strong>${sorted.length}</strong> 款`;
+        }
+
+        if (sorted.length === 0) {
+            container.innerHTML = `<p class="empty-msg">没有找到符合条件游戏 😢</p>`;
             return;
         }
 
-        let currentSort = 'playtime';
-        let filterMonth = false;
-
-        const container = document.getElementById('game-list-container');
-        const sortSelect = document.getElementById('sort-select');
-        const filterCheckbox = document.getElementById('filter-month');
-        const totalCountEl = document.getElementById('total-count');
-        const filteredCountEl = document.getElementById('filtered-count');
-
-        function renderGames() {
-            let filtered = gamesData;
-            if (filterMonth) {
-                const now = Date.now() / 1000;
-                const oneMonthAgo = now - 30 * 24 * 60 * 60;
-                filtered = filtered.filter(game => game.rtime_last_played && game.rtime_last_played >= oneMonthAgo);
-            }
-
-            const sorted = [...filtered];
-            switch (currentSort) {
-                case 'playtime':
-                    sorted.sort((a, b) => b.playtime_forever - a.playtime_forever);
-                    break;
-                case 'recent':
-                    sorted.sort((a, b) => (b.rtime_last_played || 0) - (a.rtime_last_played || 0));
-                    break;
-                case 'name':
-                    sorted.sort((a, b) => a.name.localeCompare(b.name));
-                    break;
-            }
-
-            filteredCountEl.style.display = filterMonth ? 'inline' : 'none';
-            if (filterMonth) {
-                filteredCountEl.innerHTML = `，显示 <strong>${sorted.length}</strong> 款`;
-            }
-
-            if (sorted.length === 0) {
-                container.innerHTML = `<p class="empty-msg">没有找到符合条件游戏 😢</p>`;
-                return;
-            }
-
-            let html = `<ul class="game-list">`;
-            for (const game of sorted) {
-                html += `
-                    <li class="game-item">
-                        <div class="game-image-wrap">
-                            ${game.headerImage
-                                ? `<img src="${game.headerImage}" alt="${game.name}" loading="lazy" />`
-                                : `<div class="game-image-placeholder">🎮</div>`
-                            }
-                        </div>
-                        <div class="game-info">
-                            <span class="game-name">${game.name}</span>
-                            ${game.price ? `<span class="game-price">${game.price}</span>` : ''}
-                            ${game.rating ? `
-                                <span class="game-rating ${game.rating >= 75 ? 'good' : game.rating >= 50 ? 'mid' : 'bad'}">
-                                    ⭐ <span class="score">${game.rating}</span> / 100
-                                </span>
-                            ` : ''}
-                            ${game.genres ? `<span class="game-genres">${game.genres}</span>` : ''}
-                            <span class="game-playtime">🕐 总游玩 ${Math.round(game.playtime_forever / 60)} 小时</span>
-                            ${game.rtime_last_played ? `
-                                <span class="game-last-played">
-                                    最近游玩：${new Date(game.rtime_last_played * 1000).toLocaleDateString('zh-CN')}
-                                </span>
-                            ` : ''}
-                        </div>
-                    </li>
-                `;
-            }
-            html += `</ul>`;
-            container.innerHTML = html;
+        let html = `<ul class="game-list">`;
+        for (const game of sorted) {
+            html += `
+                <li class="game-item">
+                    <div class="game-image-wrap">
+                        ${game.headerImage
+                            ? `<img src="${game.headerImage}" alt="${game.name}" loading="lazy" />`
+                            : `<div class="game-image-placeholder">🎮</div>`
+                        }
+                    </div>
+                    <div class="game-info">
+                        <span class="game-name">${game.name}</span>
+                        ${game.price ? `<span class="game-price">${game.price}</span>` : ''}
+                        ${game.rating ? `
+                            <span class="game-rating ${game.rating >= 75 ? 'good' : game.rating >= 50 ? 'mid' : 'bad'}">
+                                ⭐ <span class="score">${game.rating}</span> / 100
+                            </span>
+                        ` : ''}
+                        ${game.genres ? `<span class="game-genres">${game.genres}</span>` : ''}
+                        <span class="game-playtime">🕐 总游玩 ${Math.round(game.playtime_forever / 60)} 小时</span>
+                        ${game.rtime_last_played ? `
+                            <span class="game-last-played">
+                                最近游玩：${new Date(game.rtime_last_played * 1000).toLocaleDateString('zh-CN')}
+                            </span>
+                        ` : ''}
+                    </div>
+                </li>
+            `;
         }
+        html += `</ul>`;
+        container.innerHTML = html;
+    }
 
-        sortSelect.addEventListener('change', (e) => {
-            currentSort = e.target.value;
-            renderGames();
-        });
-
-        filterCheckbox.addEventListener('change', (e) => {
-            filterMonth = e.target.checked;
-            renderGames();
-        });
-
+    sortSelect.addEventListener('change', (e) => {
+        currentSort = e.target.value;
         renderGames();
-    })();
+    });
+
+    filterCheckbox.addEventListener('change', (e) => {
+        filterMonth = e.target.checked;
+        renderGames();
+    });
+
+    renderGames();
 </script>
 
 <style>
-/* ===== 粉白主题 ===== */
+/* ===== 粉蓝白主题 ===== */
 .steam-container {
     max-width: 1200px;
     margin: 0 auto;
     padding: 20px 24px;
-    background: #fcf4f9;
+    background: #fcf4f9;          /* 暖白粉背景 */
     border-radius: 16px;
     min-height: 60vh;
-    box-shadow: 0 4px 20px rgba(255, 107, 157, 0.08);
+    box-shadow: 0 4px 20px rgba(107, 197, 245, 0.08);
 }
 
 .steam-container h1 {
     font-size: 2rem;
     font-weight: 700;
-    color: #4a2c4a;
+    color: #4a2c4a;               /* 深紫粉 */
     margin-bottom: 4px;
     letter-spacing: 0.5px;
 }
 
 .subtitle {
-    color: #a88290;
+    color: #a88290;               /* 粉灰 */
     font-size: 0.95rem;
     margin-top: 0;
     margin-bottom: 24px;
-    border-bottom: 1px solid #f0dce6;
+    border-bottom: 1px solid #dce8f0; /* 淡蓝灰边框 */
     padding-bottom: 16px;
 }
 
+/* ===== 控制栏 ===== */
 .steam-controls {
     display: flex;
     justify-content: space-between;
@@ -242,9 +235,9 @@ const gamesDataScript = `const gamesData = ${JSON.stringify(allGames)};`;
     gap: 12px;
     margin-bottom: 20px;
     padding: 12px 16px;
-    background: #fff5fa;
+    background: #f0f8ff;          /* 淡蓝白背景 */
     border-radius: 12px;
-    border: 1px solid #f0dce6;
+    border: 1px solid #dce8f0;
 }
 
 .controls-left {
@@ -277,9 +270,9 @@ const gamesDataScript = `const gamesData = ${JSON.stringify(allGames)};`;
 }
 
 .controls-right select {
-    background: #fff5fa;
+    background: #f0f8ff;
     color: #4a2c4a;
-    border: 1px solid #f0dce6;
+    border: 1px solid #dce8f0;
     padding: 6px 12px;
     border-radius: 20px;
     font-size: 0.9rem;
@@ -289,8 +282,8 @@ const gamesDataScript = `const gamesData = ${JSON.stringify(allGames)};`;
 }
 
 .controls-right select:hover {
-    background: #ffeaf2;
-    border-color: #ff8aae;
+    background: #e5f4ff;          /* 淡蓝悬停 */
+    border-color: #6bc5f5;
 }
 
 .filter-label {
@@ -305,10 +298,11 @@ const gamesDataScript = `const gamesData = ${JSON.stringify(allGames)};`;
 .filter-label input[type="checkbox"] {
     width: 16px;
     height: 16px;
-    accent-color: #ff6b9d;
+    accent-color: #6bc5f5;       /* 淡蓝复选框 */
     cursor: pointer;
 }
 
+/* ===== 游戏网格 ===== */
 .game-list {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
@@ -317,21 +311,22 @@ const gamesDataScript = `const gamesData = ${JSON.stringify(allGames)};`;
     list-style: none;
 }
 
+/* ===== 游戏卡片 ===== */
 .game-item {
     display: flex;
     flex-direction: column;
     background: #ffffff;
     border-radius: 12px;
     overflow: hidden;
-    box-shadow: 0 2px 12px rgba(255, 107, 157, 0.10);
+    box-shadow: 0 2px 12px rgba(107, 197, 245, 0.10);
     transition: transform 0.25s ease, box-shadow 0.3s ease;
     cursor: default;
-    border: 1px solid #f8eaf0;
+    border: 1px solid #eaf0f5;
 }
 
 .game-item:hover {
     transform: translateY(-4px);
-    box-shadow: 0 8px 30px rgba(255, 107, 157, 0.18), 0 0 20px rgba(255, 107, 157, 0.06);
+    box-shadow: 0 8px 30px rgba(107, 197, 245, 0.18), 0 0 20px rgba(107, 197, 245, 0.06);
 }
 
 .game-image-wrap {
@@ -393,7 +388,7 @@ const gamesDataScript = `const gamesData = ${JSON.stringify(allGames)};`;
 .game-price {
     font-size: 0.9rem;
     font-weight: 600;
-    color: #e84393;
+    color: #4a9eff;              /* 清新蓝价格 */
     margin-top: 2px;
 }
 
@@ -453,6 +448,7 @@ const gamesDataScript = `const gamesData = ${JSON.stringify(allGames)};`;
     font-size: 1.1rem;
 }
 
+/* ===== 响应式 ===== */
 @media (max-width: 640px) {
     .steam-container {
         padding: 12px 16px;
