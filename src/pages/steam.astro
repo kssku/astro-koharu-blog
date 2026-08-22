@@ -30,7 +30,6 @@ if (!STEAM_API_KEY) {
     rawGames.sort((a, b) => b.playtime_forever - a.playtime_forever);
 
     // 2. 为前 100 个游戏获取详细信息（封面、价格、评分等）
-    //    限制数量是为了避免 API 限流，100 个对个人博客通常足够
     const topGames = rawGames.slice(0, 100);
     const enriched = await Promise.all(
       topGames.map(async (game) => {
@@ -43,7 +42,8 @@ if (!STEAM_API_KEY) {
             ...game,
             price: detail?.priceOverview?.final ? `$${(detail.priceOverview.final / 100).toFixed(2)}` : null,
             rating: detail?.metacritic?.score || null,
-            headerImage: detail?.headerImage || null,
+            // 修正字段名：header_image（下划线），并添加备用链接
+            headerImage: detail?.header_image || `https://steamcdn-a.akamaihd.net/steam/apps/${game.appid}/header.jpg`,
             genres:
               detail?.genres
                 ?.map((g) => g.description)
@@ -52,8 +52,14 @@ if (!STEAM_API_KEY) {
             releaseDate: detail?.releaseDate?.date || null,
           };
         } catch (e) {
-          // 单个游戏失败不影响整体
-          return { ...game, price: null, rating: null, headerImage: null, genres: null };
+          // 单个游戏失败时，使用备用封面图
+          return {
+            ...game,
+            price: null,
+            rating: null,
+            headerImage: `https://steamcdn-a.akamaihd.net/steam/apps/${game.appid}/header.jpg`,
+            genres: null,
+          };
         }
       }),
     );
