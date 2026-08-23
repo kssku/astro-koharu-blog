@@ -20,8 +20,8 @@ const description = '通过 Steam Web API 自动同步的游戏列表，支持�
 const STEAM_API_KEY = process.env.STEAM_API_KEY;
 const STEAM_ID = '76561199521447257';
 
-let allGames: any[] = [];
-let error: string | null = null;
+let allGames = [];
+let error = null;
 
 if (!STEAM_API_KEY) {
   error = '未配置 Steam API Key，请在 Cloudflare Pages 环境变量中设置 STEAM_API_KEY。';
@@ -32,17 +32,17 @@ if (!STEAM_API_KEY) {
     if (!listRes.ok) throw new Error(`HTTP ${listRes.status}`);
     const listJson = await listRes.json();
     const rawGames = listJson.response.games || [];
-    rawGames.sort((a: any, b: any) => b.playtime_forever - a.playtime_forever);
+    rawGames.sort((a, b) => b.playtime_forever - a.playtime_forever);
 
     const topGames = rawGames.slice(0, 200);
     const enriched = await Promise.all(
-      topGames.map(async (game: any) => {
+      topGames.map(async (game) => {
         try {
           const detailUrl = `https://store.steampowered.com/api/appdetails?appids=${game.appid}`;
           const detailRes = await fetch(detailUrl);
           const detailJson = await detailRes.json();
           const detail = detailJson[game.appid]?.data;
-          const genres = detail?.genres?.map((g: any) => g.description) || [];
+          const genres = detail?.genres?.map((g) => g.description) || [];
           return {
             ...game,
             price: detail?.priceOverview?.final ? `$${(detail.priceOverview.final / 100).toFixed(2)}` : null,
@@ -67,7 +67,7 @@ if (!STEAM_API_KEY) {
     allGames = enriched;
   } catch (e) {
     console.error('Steam API 请求失败:', e);
-    error = (e as Error).message;
+    error = e.message;
   }
 }
 
