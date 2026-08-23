@@ -38,18 +38,21 @@ if (!STEAM_API_KEY) {
     const enriched = await Promise.all(
       topGames.map(async (game) => {
         try {
-          const detailUrl = `https://store.steampowered.com/api/appdetails?appids=${game.appid}`;
+          // 添加语言参数 l=schinese 获取中文信息
+          const detailUrl = `https://store.steampowered.com/api/appdetails?appids=${game.appid}&l=schinese`;
           const detailRes = await fetch(detailUrl);
           const detailJson = await detailRes.json();
           const detail = detailJson[game.appid]?.data;
           const genres = detail?.genres?.map((g) => g.description) || [];
           return {
             ...game,
-            price: detail?.priceOverview?.final ? `$${(detail.priceOverview.final / 100).toFixed(2)}` : null,
+            // 优先使用详情中的中文名，否则使用原始名
+            name: detail?.name || game.name,
+            price: detail?.priceOverview?.final ? `¥${(detail.priceOverview.final / 100).toFixed(2)}` : null,
             rating: detail?.metacritic?.score || null,
             headerImage: detail?.header_image || `https://steamcdn-a.akamaihd.net/steam/apps/${game.appid}/header.jpg`,
-            genres: genres,
-            genresDisplay: genres.slice(0, 2).join(', ') || null,
+            genres: genres, // 已经是中文
+            genresDisplay: genres.slice(0, 2).join('、') || null, // 用顿号分隔更符合中文习惯
             releaseDate: detail?.releaseDate?.date || null,
           };
         } catch (e) {
@@ -71,7 +74,7 @@ if (!STEAM_API_KEY) {
   }
 }
 
-// 提取常见类型用于分类标签
+// 提取常见类型用于分类标签（现在会是中文）
 const genreCount = new Map<string, number>();
 for (const game of allGames) {
   for (const genre of game.genres || []) {
@@ -101,7 +104,7 @@ const totalCount = allGames.length;
         <>
           <p class="steam-subtitle">数据通过 Steam Web API 自动获取，在每次构建时更新。共 <strong>{totalCount}</strong> 款游戏。</p>
 
-          <!-- 分类标签栏 -->
+          <!-- 分类标签栏（中文类型） -->
           <div class="genre-tabs">
             <button class="genre-tab active" data-genre="all">全部 <span class="count">{totalCount}</span></button>
             <button class="genre-tab" data-genre="recent">最近玩过</button>
