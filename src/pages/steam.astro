@@ -136,105 +136,107 @@ const totalCount = allGames.length;
 
 <!-- 使用 define:vars 注入数据 -->
 <script define:vars={{ games: allGames, topGenres }}>
-  if (!games || !games.length) {
-    document.getElementById('game-list-container').innerHTML = '<p class="empty-msg">没有游戏数据，请检查配置。</p>';
-    return;
-  }
-
-  let currentSort = 'playtime';
-  let currentGenre = 'all';
-
-  const container = document.getElementById('game-list-container');
-  const sortSelect = document.getElementById('sort-select');
-  const filteredCountEl = document.getElementById('filtered-count');
-
-  // 分类标签点击事件
-  document.querySelectorAll('.genre-tab').forEach(tab => {
-    tab.addEventListener('click', function() {
-      document.querySelectorAll('.genre-tab').forEach(t => t.classList.remove('active'));
-      this.classList.add('active');
-      currentGenre = this.dataset.genre;
-      renderGames();
-    });
-  });
-
-  function gameMatchesGenre(game, genre) {
-    if (genre === 'all') return true;
-    if (genre === 'recent') {
-      const now = Date.now() / 1000;
-      const oneMonthAgo = now - 30 * 24 * 60 * 60;
-      return game.rtime_last_played && game.rtime_last_played >= oneMonthAgo;
-    }
-    return (game.genres || []).some(g => g === genre);
-  }
-
-  function renderGames() {
-    let filtered = games.filter(game => gameMatchesGenre(game, currentGenre));
-
-    const sorted = [...filtered];
-    switch (currentSort) {
-      case 'playtime':
-        sorted.sort((a, b) => b.playtime_forever - a.playtime_forever);
-        break;
-      case 'recent':
-        sorted.sort((a, b) => (b.rtime_last_played || 0) - (a.rtime_last_played || 0));
-        break;
-      case 'name':
-        sorted.sort((a, b) => a.name.localeCompare(b.name));
-        break;
-    }
-
-    if (currentGenre === 'all') {
-      filteredCountEl.style.display = 'none';
-    } else {
-      filteredCountEl.style.display = 'inline';
-      filteredCountEl.innerHTML = `显示 <strong>${sorted.length}</strong> 款`;
-    }
-
-    if (sorted.length === 0) {
-      container.innerHTML = `<p class="empty-msg">没有找到符合条件游戏 😢</p>`;
+  (function() {
+    if (!games || !games.length) {
+      document.getElementById('game-list-container').innerHTML = '<p class="empty-msg">没有游戏数据，请检查配置。</p>';
       return;
     }
 
-    let html = `<ul class="game-list">`;
-    for (const game of sorted) {
-      html += `
-        <li class="game-item">
-          <div class="game-image-wrap">
-            ${game.headerImage
-              ? `<img src="${game.headerImage}" alt="${game.name}" loading="lazy" />`
-              : `<div class="game-image-placeholder">🎮</div>`
-            }
-          </div>
-          <div class="game-info">
-            <span class="game-name">${game.name}</span>
-            ${game.price ? `<span class="game-price">${game.price}</span>` : ''}
-            ${game.rating ? `
-              <span class="game-rating ${game.rating >= 75 ? 'good' : game.rating >= 50 ? 'mid' : 'bad'}">
-                ⭐ <span class="score">${game.rating}</span> / 100
-              </span>
-            ` : ''}
-            ${game.genresDisplay ? `<span class="game-genres">${game.genresDisplay}</span>` : ''}
-            <span class="game-playtime">🕐 总游玩 ${Math.round(game.playtime_forever / 60)} 小时</span>
-            ${game.rtime_last_played ? `
-              <span class="game-last-played">
-                最近游玩：${new Date(game.rtime_last_played * 1000).toLocaleDateString('zh-CN')}
-              </span>
-            ` : ''}
-          </div>
-        </li>
-      `;
+    let currentSort = 'playtime';
+    let currentGenre = 'all';
+
+    const container = document.getElementById('game-list-container');
+    const sortSelect = document.getElementById('sort-select');
+    const filteredCountEl = document.getElementById('filtered-count');
+
+    // 分类标签点击事件
+    document.querySelectorAll('.genre-tab').forEach(tab => {
+      tab.addEventListener('click', function() {
+        document.querySelectorAll('.genre-tab').forEach(t => t.classList.remove('active'));
+        this.classList.add('active');
+        currentGenre = this.dataset.genre;
+        renderGames();
+      });
+    });
+
+    function gameMatchesGenre(game, genre) {
+      if (genre === 'all') return true;
+      if (genre === 'recent') {
+        const now = Date.now() / 1000;
+        const oneMonthAgo = now - 30 * 24 * 60 * 60;
+        return game.rtime_last_played && game.rtime_last_played >= oneMonthAgo;
+      }
+      return (game.genres || []).some(g => g === genre);
     }
-    html += `</ul>`;
-    container.innerHTML = html;
-  }
 
-  sortSelect.addEventListener('change', (e) => {
-    currentSort = e.target.value;
+    function renderGames() {
+      let filtered = games.filter(game => gameMatchesGenre(game, currentGenre));
+
+      const sorted = [...filtered];
+      switch (currentSort) {
+        case 'playtime':
+          sorted.sort((a, b) => b.playtime_forever - a.playtime_forever);
+          break;
+        case 'recent':
+          sorted.sort((a, b) => (b.rtime_last_played || 0) - (a.rtime_last_played || 0));
+          break;
+        case 'name':
+          sorted.sort((a, b) => a.name.localeCompare(b.name));
+          break;
+      }
+
+      if (currentGenre === 'all') {
+        filteredCountEl.style.display = 'none';
+      } else {
+        filteredCountEl.style.display = 'inline';
+        filteredCountEl.innerHTML = `显示 <strong>${sorted.length}</strong> 款`;
+      }
+
+      if (sorted.length === 0) {
+        container.innerHTML = `<p class="empty-msg">没有找到符合条件游戏 😢</p>`;
+        return;
+      }
+
+      let html = `<ul class="game-list">`;
+      for (const game of sorted) {
+        html += `
+          <li class="game-item">
+            <div class="game-image-wrap">
+              ${game.headerImage
+                ? `<img src="${game.headerImage}" alt="${game.name}" loading="lazy" />`
+                : `<div class="game-image-placeholder">🎮</div>`
+              }
+            </div>
+            <div class="game-info">
+              <span class="game-name">${game.name}</span>
+              ${game.price ? `<span class="game-price">${game.price}</span>` : ''}
+              ${game.rating ? `
+                <span class="game-rating ${game.rating >= 75 ? 'good' : game.rating >= 50 ? 'mid' : 'bad'}">
+                  ⭐ <span class="score">${game.rating}</span> / 100
+                </span>
+              ` : ''}
+              ${game.genresDisplay ? `<span class="game-genres">${game.genresDisplay}</span>` : ''}
+              <span class="game-playtime">🕐 总游玩 ${Math.round(game.playtime_forever / 60)} 小时</span>
+              ${game.rtime_last_played ? `
+                <span class="game-last-played">
+                  最近游玩：${new Date(game.rtime_last_played * 1000).toLocaleDateString('zh-CN')}
+                </span>
+              ` : ''}
+            </div>
+          </li>
+        `;
+      }
+      html += `</ul>`;
+      container.innerHTML = html;
+    }
+
+    sortSelect.addEventListener('change', (e) => {
+      currentSort = e.target.value;
+      renderGames();
+    });
+
     renderGames();
-  });
-
-  renderGames();
+  })();
 </script>
 
 <style>
