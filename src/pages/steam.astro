@@ -1,15 +1,23 @@
 ---
+import HomeSider from '@components/layout/HomeSider.astro';
+import Cover from '@components/ui/cover/Cover.astro';
+import { CONTENT_PADDING } from '@constants/layout';
 // src/pages/steam.astro
-import PageLayout from '../layouts/PageLayout.astro';
+import { siteConfig } from '@constants/site-config';
+import Layout from '@layouts/Layout.astro';
+import TwoColumnLayout from '@layouts/TwoColumnLayout.astro';
+import { Comment } from '@/components/comment';
+import { defaultLocale, t } from '@/i18n';
 
-const frontmatter = {
-  title: '我的 Steam 游戏库',
-  coverTitle: '🎮 我的 Steam 游戏库',
-  description: '通过 Steam Web API 自动同步的游戏列表，支持排序与筛选',
-  comments: false,
-};
+interface Props {
+  locale?: string;
+}
 
-// -------- 配置 --------
+const { locale = defaultLocale } = Astro.props;
+const title = `🎮 Steam 游戏库 | ${siteConfig.title}`;
+const description = '通过 Steam Web API 自动同步的游戏列表，支持分类筛选与排序';
+
+// -------- Steam API 配置 --------
 const STEAM_API_KEY = process.env.STEAM_API_KEY;
 const STEAM_ID = '76561199521447257';
 
@@ -35,16 +43,15 @@ if (!STEAM_API_KEY) {
           const detailRes = await fetch(detailUrl);
           const detailJson = await detailRes.json();
           const detail = detailJson[game.appid]?.data;
+          // 提取所有类型，不只是前两个
+          const genres = detail?.genres?.map((g) => g.description) || [];
           return {
             ...game,
             price: detail?.priceOverview?.final ? `$${(detail.priceOverview.final / 100).toFixed(2)}` : null,
             rating: detail?.metacritic?.score || null,
             headerImage: detail?.header_image || `https://steamcdn-a.akamaihd.net/steam/apps/${game.appid}/header.jpg`,
-            genres:
-              detail?.genres
-                ?.map((g) => g.description)
-                .slice(0, 2)
-                .join(', ') || null,
+            genres: genres,
+            genresDisplay: genres.slice(0, 2).join(', ') || null,
             releaseDate: detail?.releaseDate?.date || null,
           };
         } catch (e) {
@@ -53,7 +60,8 @@ if (!STEAM_API_KEY) {
             price: null,
             rating: null,
             headerImage: `https://steamcdn-a.akamaihd.net/steam/apps/${game.appid}/header.jpg`,
-            genres: null,
+            genres: [],
+            genresDisplay: null,
           };
         }
       }),
@@ -65,355 +73,395 @@ if (!STEAM_API_KEY) {
   }
 }
 
-const totalCount = allGames.length;
+// 从所有游戏中提取类型（用于分类标签）
+const allGenres = new Set<string>();
+for (const game of allGames) {
+  for (const genre of game.genres || []) {
+    allGenres.add(genre);
+  }
+}
+// 按使用频率排序取前 8 个常见类型
+const genreCount = new Map<string, number>();
+for (const game of allGames) {
+  for (const genre of game.genres || []) {
+    genreCount.set(genre, (genreCount.get(genre) || 0) + 1);
+  }
+}
+const topGenres = [...genreCount.entries()]
+  .sort((a, b) => b[1] - a[1])
+  .slice(0, 8)
+  .map(([genre]) => genre);
 
-// 生成安全的 JavaScript 变量赋值语句（直接输出到页面）
-const gamesDataScript = `const gamesData = ${JSON.stringify(allGames)};`;
+const totalCount = allGames.length;
 ---
 
-<PageLayout frontmatter={frontmatter}>
-    <div class="steam-container">
-        <h1>{frontmatter.coverTitle}</h1>
-        <p class="subtitle">数据通过 Steam Web API 自动获取，在每次构建时更新。</p>
+<Layout locale={locale} title={title} description={description}>
+  <TwoColumnLayout>
+    <Cover slot="cover" title="🎮 Steam 游戏库" />
+    <HomeSider slot="sider" />
+    <div
+      class={`bg-gradient-start shadow-box tablet:shadow-none flex flex-col overflow-hidden ${CONTENT_PADDING.standard}`}
+    >
+      {error ? (
+        <div class="error-msg">⚠️ 加载失败：{error}</div>
+      ) : allGames.length === 0 ? (
+        <div class="error-msg">⚠️ 没有获取到任何游戏数据，请检查 Steam 个人资料是否公开。</div>
+      ) : (
+        <>
+          <p class="steam-subtitle">数据通过 Steam Web API 自动获取，在每次构建时更新。共 <strong>{totalCount}</strong> 款游戏。</p>
 
-        {error ? (
-            <div class="error-msg">⚠️ 加载失败：{error}</div>
-        ) : (
-            <>
-                <div class="steam-controls">
-                    <div class="controls-left">
-                        <span class="game-count">共 <strong id="total-count">{totalCount}</strong> 款游戏</span>
-                        <span id="filtered-count" style="display:none;">，显示 <strong>0</strong> 款</span>
-                    </div>
-                    <div class="controls-right">
-                        <select id="sort-select">
-                            <option value="playtime">总游玩时间 (高→低)</option>
-                            <option value="recent">最近游玩 (新→旧)</option>
-                            <option value="name">游戏名称 (A→Z)</option>
-                        </select>
-                        <label class="filter-label">
-                            <input type="checkbox" id="filter-month" />
-                            仅显示最近一个月玩过的
-                        </label>
-                    </div>
-                </div>
+          <!-- ===== 分类标签栏（模仿 Bangumi） ===== -->
+          <div class="genre-tabs">
+            <button class="genre-tab active" data-genre="all">全部 <span class="count">{totalCount}</span></button>
+            <button class="genre-tab" data-genre="recent">最近玩过</button>
+            {topGenres.map(genre => (
+              <button class="genre-tab" data-genre={genre}>{genre}</button>
+            ))}
+          </div>
 
-                <div id="game-list-container">
-                    <!-- 由 JavaScript 渲染 -->
-                </div>
-            </>
-        )}
+          <!-- ===== 排序控制栏 ===== -->
+          <div class="steam-controls">
+            <div class="controls-left">
+              <span id="filtered-count" style="display:none;">显示 <strong>0</strong> 款</span>
+            </div>
+            <div class="controls-right">
+              <select id="sort-select">
+                <option value="playtime">总游玩时间 (高→低)</option>
+                <option value="recent">最近游玩 (新→旧)</option>
+                <option value="name">游戏名称 (A→Z)</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- ===== 游戏列表容器 ===== -->
+          <div id="game-list-container">
+            <!-- 由 JavaScript 渲染 -->
+          </div>
+        </>
+      )}
+      <Comment />
     </div>
-</PageLayout>
+  </TwoColumnLayout>
+</Layout>
 
-<!-- 直接注入数据，无需二次解析 -->
-<script>{gamesDataScript}</script>
+<!-- 使用 define:vars 注入数据 -->
+<script define:vars={{ games: allGames, topGenres }}>
+  if (!games || !games.length) {
+    document.getElementById('game-list-container').innerHTML = '<p class="empty-msg">没有游戏数据，请检查配置。</p>';
+    return;
+  }
 
-<!-- 渲染逻辑 -->
-<script>
-    (function() {
-        // gamesData 已在上一脚本中定义
-        if (typeof gamesData === 'undefined' || !gamesData.length) {
-            document.getElementById('game-list-container').innerHTML = '<p class="empty-msg">没有游戏数据，请检查配置。</p>';
-            return;
-        }
+  let currentSort = 'playtime';
+  let currentGenre = 'all';
 
-        let currentSort = 'playtime';
-        let filterMonth = false;
+  const container = document.getElementById('game-list-container');
+  const sortSelect = document.getElementById('sort-select');
+  const filteredCountEl = document.getElementById('filtered-count');
 
-        const container = document.getElementById('game-list-container');
-        const sortSelect = document.getElementById('sort-select');
-        const filterCheckbox = document.getElementById('filter-month');
-        const totalCountEl = document.getElementById('total-count');
-        const filteredCountEl = document.getElementById('filtered-count');
+  // ===== 分类标签点击事件 =====
+  document.querySelectorAll('.genre-tab').forEach(tab => {
+    tab.addEventListener('click', function() {
+      document.querySelectorAll('.genre-tab').forEach(t => t.classList.remove('active'));
+      this.classList.add('active');
+      currentGenre = this.dataset.genre;
+      renderGames();
+    });
+  });
 
-        function renderGames() {
-            let filtered = gamesData;
-            if (filterMonth) {
-                const now = Date.now() / 1000;
-                const oneMonthAgo = now - 30 * 24 * 60 * 60;
-                filtered = filtered.filter(game => game.rtime_last_played && game.rtime_last_played >= oneMonthAgo);
+  // ===== 判断游戏是否匹配类型（只要包含该类型即可） =====
+  function gameMatchesGenre(game, genre) {
+    if (genre === 'all') return true;
+    if (genre === 'recent') {
+      const now = Date.now() / 1000;
+      const oneMonthAgo = now - 30 * 24 * 60 * 60;
+      return game.rtime_last_played && game.rtime_last_played >= oneMonthAgo;
+    }
+    return (game.genres || []).some(g => g === genre);
+  }
+
+  function renderGames() {
+    // 1. 按类型筛选
+    let filtered = games.filter(game => gameMatchesGenre(game, currentGenre));
+
+    // 2. 按排序
+    const sorted = [...filtered];
+    switch (currentSort) {
+      case 'playtime':
+        sorted.sort((a, b) => b.playtime_forever - a.playtime_forever);
+        break;
+      case 'recent':
+        sorted.sort((a, b) => (b.rtime_last_played || 0) - (a.rtime_last_played || 0));
+        break;
+      case 'name':
+        sorted.sort((a, b) => a.name.localeCompare(b.name));
+        break;
+    }
+
+    // 更新筛选计数
+    if (currentGenre === 'all') {
+      filteredCountEl.style.display = 'none';
+    } else {
+      filteredCountEl.style.display = 'inline';
+      filteredCountEl.innerHTML = `显示 <strong>${sorted.length}</strong> 款`;
+    }
+
+    if (sorted.length === 0) {
+      container.innerHTML = `<p class="empty-msg">没有找到符合条件游戏 😢</p>`;
+      return;
+    }
+
+    let html = `<ul class="game-list">`;
+    for (const game of sorted) {
+      html += `
+        <li class="game-item">
+          <div class="game-image-wrap">
+            ${game.headerImage
+              ? `<img src="${game.headerImage}" alt="${game.name}" loading="lazy" />`
+              : `<div class="game-image-placeholder">🎮</div>`
             }
+          </div>
+          <div class="game-info">
+            <span class="game-name">${game.name}</span>
+            ${game.price ? `<span class="game-price">${game.price}</span>` : ''}
+            ${game.rating ? `
+              <span class="game-rating ${game.rating >= 75 ? 'good' : game.rating >= 50 ? 'mid' : 'bad'}">
+                ⭐ <span class="score">${game.rating}</span> / 100
+              </span>
+            ` : ''}
+            ${game.genresDisplay ? `<span class="game-genres">${game.genresDisplay}</span>` : ''}
+            <span class="game-playtime">🕐 总游玩 ${Math.round(game.playtime_forever / 60)} 小时</span>
+            ${game.rtime_last_played ? `
+              <span class="game-last-played">
+                最近游玩：${new Date(game.rtime_last_played * 1000).toLocaleDateString('zh-CN')}
+              </span>
+            ` : ''}
+          </div>
+        </li>
+      `;
+    }
+    html += `</ul>`;
+    container.innerHTML = html;
+  }
 
-            const sorted = [...filtered];
-            switch (currentSort) {
-                case 'playtime':
-                    sorted.sort((a, b) => b.playtime_forever - a.playtime_forever);
-                    break;
-                case 'recent':
-                    sorted.sort((a, b) => (b.rtime_last_played || 0) - (a.rtime_last_played || 0));
-                    break;
-                case 'name':
-                    sorted.sort((a, b) => a.name.localeCompare(b.name));
-                    break;
-            }
+  sortSelect.addEventListener('change', (e) => {
+    currentSort = e.target.value;
+    renderGames();
+  });
 
-            filteredCountEl.style.display = filterMonth ? 'inline' : 'none';
-            if (filterMonth) {
-                filteredCountEl.innerHTML = `，显示 <strong>${sorted.length}</strong> 款`;
-            }
-
-            if (sorted.length === 0) {
-                container.innerHTML = `<p class="empty-msg">没有找到符合条件游戏 😢</p>`;
-                return;
-            }
-
-            let html = `<ul class="game-list">`;
-            for (const game of sorted) {
-                html += `
-                    <li class="game-item">
-                        <div class="game-image-wrap">
-                            ${game.headerImage
-                                ? `<img src="${game.headerImage}" alt="${game.name}" loading="lazy" />`
-                                : `<div class="game-image-placeholder">🎮</div>`
-                            }
-                        </div>
-                        <div class="game-info">
-                            <span class="game-name">${game.name}</span>
-                            ${game.price ? `<span class="game-price">${game.price}</span>` : ''}
-                            ${game.rating ? `
-                                <span class="game-rating ${game.rating >= 75 ? 'good' : game.rating >= 50 ? 'mid' : 'bad'}">
-                                    ⭐ <span class="score">${game.rating}</span> / 100
-                                </span>
-                            ` : ''}
-                            ${game.genres ? `<span class="game-genres">${game.genres}</span>` : ''}
-                            <span class="game-playtime">🕐 总游玩 ${Math.round(game.playtime_forever / 60)} 小时</span>
-                            ${game.rtime_last_played ? `
-                                <span class="game-last-played">
-                                    最近游玩：${new Date(game.rtime_last_played * 1000).toLocaleDateString('zh-CN')}
-                                </span>
-                            ` : ''}
-                        </div>
-                    </li>
-                `;
-            }
-            html += `</ul>`;
-            container.innerHTML = html;
-        }
-
-        sortSelect.addEventListener('change', (e) => {
-            currentSort = e.target.value;
-            renderGames();
-        });
-
-        filterCheckbox.addEventListener('change', (e) => {
-            filterMonth = e.target.checked;
-            renderGames();
-        });
-
-        renderGames();
-    })();
+  renderGames();
 </script>
 
 <style>
-/* ===== 粉白主题 ===== */
-.steam-container {
-    max-width: 1200px;
-    margin: 0 auto;
-    padding: 20px 24px;
-    background: #fcf4f9;
-    border-radius: 16px;
-    min-height: 60vh;
-    box-shadow: 0 4px 20px rgba(255, 107, 157, 0.08);
+/* ===== 粉蓝白主题 ===== */
+
+.steam-subtitle {
+  color: var(--text-color-secondary, #a88290);
+  font-size: 0.95rem;
+  margin-bottom: 16px;
 }
 
-.steam-container h1 {
-    font-size: 2rem;
-    font-weight: 700;
-    color: #4a2c4a;
-    margin-bottom: 4px;
-    letter-spacing: 0.5px;
+/* ===== 分类标签栏（模仿 Bangumi） ===== */
+.genre-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 16px;
+  padding-bottom: 12px;
+  border-bottom: 2px solid var(--border-color, #dce8f0);
 }
 
-.subtitle {
-    color: #a88290;
-    font-size: 0.95rem;
-    margin-top: 0;
-    margin-bottom: 24px;
-    border-bottom: 1px solid #f0dce6;
-    padding-bottom: 16px;
+.genre-tab {
+  background: transparent;
+  border: none;
+  padding: 6px 16px;
+  border-radius: 20px;
+  font-size: 0.85rem;
+  color: var(--text-color-secondary, #a88290);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  gap: 4px;
 }
 
+.genre-tab .count {
+  font-size: 0.7rem;
+  background: var(--bg-color-secondary, #f0f8ff);
+  padding: 0 6px;
+  border-radius: 10px;
+  color: var(--text-color-secondary, #a88290);
+}
+
+.genre-tab:hover {
+  color: var(--text-color, #4a2c4a);
+  background: var(--bg-color-secondary, #f0f8ff);
+}
+
+.genre-tab.active {
+  background: #6bc5f5;
+  color: #fff;
+  font-weight: 600;
+}
+
+.genre-tab.active .count {
+  background: rgba(255, 255, 255, 0.2);
+  color: #fff;
+}
+
+/* ===== 控制栏 ===== */
 .steam-controls {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    flex-wrap: wrap;
-    gap: 12px;
-    margin-bottom: 20px;
-    padding: 12px 16px;
-    background: #fff5fa;
-    border-radius: 12px;
-    border: 1px solid #f0dce6;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-bottom: 20px;
+  padding: 8px 0;
 }
 
 .controls-left {
-    display: flex;
-    align-items: baseline;
-    gap: 8px;
-    flex-wrap: wrap;
-}
-
-.game-count {
-    color: #a88290;
-    font-size: 0.95rem;
-    margin: 0;
-}
-
-.game-count strong {
-    color: #4a2c4a;
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  flex-wrap: wrap;
 }
 
 #filtered-count {
-    color: #a88290;
-    font-size: 0.9rem;
+  color: var(--text-color-secondary, #a88290);
+  font-size: 0.9rem;
 }
 
 .controls-right {
-    display: flex;
-    align-items: center;
-    gap: 16px;
-    flex-wrap: wrap;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex-wrap: wrap;
 }
 
 .controls-right select {
-    background: #fff5fa;
-    color: #4a2c4a;
-    border: 1px solid #f0dce6;
-    padding: 6px 12px;
-    border-radius: 20px;
-    font-size: 0.9rem;
-    cursor: pointer;
-    outline: none;
-    transition: all 0.2s;
+  background: var(--bg-color-secondary, #f0f8ff);
+  color: var(--text-color, #4a2c4a);
+  border: 1px solid var(--border-color, #dce8f0);
+  padding: 6px 12px;
+  border-radius: 20px;
+  font-size: 0.9rem;
+  cursor: pointer;
+  outline: none;
+  transition: all 0.2s;
 }
 
 .controls-right select:hover {
-    background: #ffeaf2;
-    border-color: #ff8aae;
+  background: #e5f4ff;
+  border-color: #6bc5f5;
 }
 
-.filter-label {
-    color: #4a2c4a;
-    font-size: 0.9rem;
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    cursor: pointer;
-}
-
-.filter-label input[type="checkbox"] {
-    width: 16px;
-    height: 16px;
-    accent-color: #ff6b9d;
-    cursor: pointer;
-}
-
+/* ===== 游戏网格 ===== */
 .game-list {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-    gap: 20px;
-    padding: 0;
-    list-style: none;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 20px;
+  padding: 0;
+  list-style: none;
 }
 
+/* ===== 游戏卡片 ===== */
 .game-item {
-    display: flex;
-    flex-direction: column;
-    background: #ffffff;
-    border-radius: 12px;
-    overflow: hidden;
-    box-shadow: 0 2px 12px rgba(255, 107, 157, 0.10);
-    transition: transform 0.25s ease, box-shadow 0.3s ease;
-    cursor: default;
-    border: 1px solid #f8eaf0;
+  display: flex;
+  flex-direction: column;
+  background: var(--card-bg, #ffffff);
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 2px 12px rgba(107, 197, 245, 0.10);
+  transition: transform 0.25s ease, box-shadow 0.3s ease;
+  cursor: default;
+  border: 1px solid var(--border-color-light, #eaf0f5);
 }
 
 .game-item:hover {
-    transform: translateY(-4px);
-    box-shadow: 0 8px 30px rgba(255, 107, 157, 0.18), 0 0 20px rgba(255, 107, 157, 0.06);
+  transform: translateY(-4px);
+  box-shadow: 0 8px 30px rgba(107, 197, 245, 0.18), 0 0 20px rgba(107, 197, 245, 0.06);
 }
 
 .game-image-wrap {
-    position: relative;
-    width: 100%;
-    padding-top: 56.25%;
-    background: #fcf4f9;
-    overflow: hidden;
-    flex-shrink: 0;
+  position: relative;
+  width: 100%;
+  padding-top: 56.25%;
+  background: var(--bg-color, #fcf4f9);
+  overflow: hidden;
+  flex-shrink: 0;
 }
 
 .game-image-wrap img {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    transition: transform 0.4s ease;
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.4s ease;
 }
 
 .game-item:hover .game-image-wrap img {
-    transform: scale(1.03);
+  transform: scale(1.03);
 }
 
 .game-image-placeholder {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 48px;
-    background: #fcf4f9;
-    color: #d4b0c0;
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 48px;
+  background: var(--bg-color, #fcf4f9);
+  color: #d4b0c0;
 }
 
 .game-info {
-    padding: 12px 14px 14px;
-    display: flex;
-    flex-direction: column;
-    gap: 4px;
-    flex: 1;
+  padding: 12px 14px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  flex: 1;
 }
 
 .game-name {
-    font-weight: 600;
-    font-size: 0.95rem;
-    color: #3d2a3d;
-    line-height: 1.3;
-    display: -webkit-box;
-    -webkit-line-clamp: 2;
-    -webkit-box-orient: vertical;
-    overflow: hidden;
+  font-weight: 600;
+  font-size: 0.95rem;
+  color: var(--text-color, #3d2a3d);
+  line-height: 1.3;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
 }
 
 .game-price {
-    font-size: 0.9rem;
-    font-weight: 600;
-    color: #e84393;
-    margin-top: 2px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #4a9eff;
+  margin-top: 2px;
 }
 
 .game-price.free {
-    color: #a88290;
-    font-weight: 400;
+  color: var(--text-color-secondary, #a88290);
+  font-weight: 400;
 }
 
 .game-rating {
-    display: inline-flex;
-    align-items: center;
-    gap: 4px;
-    font-size: 0.8rem;
-    color: #a88290;
-    margin-top: 2px;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 0.8rem;
+  color: var(--text-color-secondary, #a88290);
+  margin-top: 2px;
 }
 
 .game-rating .score {
-    color: #4a2c4a;
-    font-weight: 600;
+  color: var(--text-color, #4a2c4a);
+  font-weight: 600;
 }
 
 .game-rating.good .score { color: #2e7d32; }
@@ -421,59 +469,65 @@ const gamesDataScript = `const gamesData = ${JSON.stringify(allGames)};`;
 .game-rating.bad .score { color: #d32f2f; }
 
 .game-genres {
-    font-size: 0.75rem;
-    color: #b89aa8;
-    margin-top: 2px;
+  font-size: 0.75rem;
+  color: var(--text-color-secondary, #b89aa8);
+  margin-top: 2px;
 }
 
 .game-playtime {
-    font-size: 0.75rem;
-    color: #b89aa8;
-    margin-top: 4px;
+  font-size: 0.75rem;
+  color: var(--text-color-secondary, #b89aa8);
+  margin-top: 4px;
 }
 
 .game-last-played {
-    font-size: 0.7rem;
-    color: #ccb0be;
+  font-size: 0.7rem;
+  color: var(--text-color-tertiary, #ccb0be);
 }
 
 .error-msg {
-    color: #d32f2f;
-    background: #fce4ec;
-    padding: 12px 16px;
-    border-radius: 8px;
-    margin: 20px 0;
-    border: 1px solid #f8d7da;
+  color: #d32f2f;
+  background: #fce4ec;
+  padding: 12px 16px;
+  border-radius: 8px;
+  margin: 20px 0;
+  border: 1px solid #f8d7da;
 }
 
 .empty-msg {
-    color: #a88290;
-    text-align: center;
-    padding: 40px 0;
-    font-size: 1.1rem;
+  color: var(--text-color-secondary, #a88290);
+  text-align: center;
+  padding: 40px 0;
+  font-size: 1.1rem;
 }
 
+/* ===== 响应式 ===== */
 @media (max-width: 640px) {
-    .steam-container {
-        padding: 12px 16px;
-    }
-    .game-list {
-        grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
-        gap: 12px;
-    }
-    .game-info {
-        padding: 8px 10px 10px;
-    }
-    .game-name {
-        font-size: 0.85rem;
-    }
-    .steam-controls {
-        flex-direction: column;
-        align-items: stretch;
-        gap: 8px;
-    }
-    .controls-left, .controls-right {
-        justify-content: center;
-    }
+  .game-list {
+    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+    gap: 12px;
+  }
+  .game-info {
+    padding: 8px 10px 10px;
+  }
+  .game-name {
+    font-size: 0.85rem;
+  }
+  .genre-tabs {
+    gap: 4px;
+  }
+  .genre-tab {
+    font-size: 0.75rem;
+    padding: 4px 12px;
+  }
+  .steam-controls {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 8px;
+  }
+  .controls-left,
+  .controls-right {
+    justify-content: center;
+  }
 }
 </style>
