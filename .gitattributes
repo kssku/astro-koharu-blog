@@ -1,0 +1,24 @@
+﻿# 统一以 LF 存入仓库，避免 core.autocrlf 造成的换行符噪音
+* text=auto eol=lf
+
+# 二进制文件不做换行转换
+*.png  binary
+*.jpg  binary
+*.jpeg binary
+*.gif  binary
+*.webp binary
+*.avif binary
+*.ico  binary
+*.woff binary
+*.woff2 binary
+*.ttf  binary
+*.otf  binary
+*.pdf  binary
+*.zip  binary
+
+# Windows 批处理必须保留 CRLF
+*.bat  text eol=crlf
+*.cmd  text eol=crlf
+
+# 锁文件与快照不参与 diff 噪音
+pnpm-lock.yaml -diff
