@@ -27,7 +27,9 @@ const readState = data ? getPostReadingTime(data) : null;
 const isDraft = import.meta.env.DEV && draft === true;
 
 // 获取横幅图片的 LQIP 样式
-const bannerLqipStyle = compact ? undefined : getLqipStyle('https://cdn.jsdmirror.com/gh/kssku/images@main/wallpapers/blue/landscape/header_1920.webp');
+const bannerLqipStyle = compact
+  ? undefined
+  : getLqipStyle('https://cdn.jsdmirror.com/gh/kssku/images@main/wallpapers/blue/landscape/header_1920.webp');
 
 const locale = getLocaleFromUrl(Astro.url.pathname);
 
