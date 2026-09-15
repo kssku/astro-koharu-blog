@@ -12,6 +12,33 @@ interface Props {
   locale?: string;
 }
 
+interface SteamGame {
+  appid: number;
+  name?: string;
+  playtime_forever?: number;
+  price?: string | null;
+  rating?: number | null;
+  headerImage?: string;
+  genres?: string[];
+  genresDisplay?: string | null;
+  releaseDate?: string | null;
+}
+
+interface SteamApiGame {
+  appid: number;
+  name?: string;
+  playtime_forever?: number;
+}
+
+interface SteamAppDetails {
+  name?: string;
+  header_image?: string;
+  genres?: { description: string }[];
+  priceOverview?: { final?: number };
+  metacritic?: { score?: number };
+  releaseDate?: { date?: string };
+}
+
 const { locale = defaultLocale } = Astro.props;
 const title = `🎮 Steam 游戏库 | ${siteConfig.title}`;
 const description = '通过 Steam Web API 自动同步的游戏列表，支持分类筛选与排序';
@@ -20,8 +47,8 @@ const description = '通过 Steam Web API 自动同步的游戏列表，支持�
 const STEAM_API_KEY = process.env.STEAM_API_KEY;
 const STEAM_ID = '76561199521447257';
 
-let allGames = [];
-let error = null;
+let allGames: SteamGame[] = [];
+let error: string | null = null;
 
 if (!STEAM_API_KEY) {
   error = '未配置 Steam API Key，请在 Cloudflare Pages 环境变量中设置 STEAM_API_KEY。';
@@ -30,17 +57,17 @@ if (!STEAM_API_KEY) {
     const listUrl = `https://api.steampowered.com/IPlayerService/GetOwnedGames/v1/?key=${STEAM_API_KEY}&steamid=${STEAM_ID}&include_appinfo=true&include_played_free_games=true&format=json`;
     const listRes = await fetch(listUrl);
     if (!listRes.ok) throw new Error(`HTTP ${listRes.status}`);
-    const listJson = await listRes.json();
-    const rawGames = listJson.response.games || [];
-    rawGames.sort((a, b) => b.playtime_forever - a.playtime_forever);
+    const listJson = (await listRes.json()) as { response?: { games?: SteamApiGame[] } };
+    const rawGames: SteamApiGame[] = listJson.response?.games || [];
+    rawGames.sort((a, b) => (b.playtime_forever ?? 0) - (a.playtime_forever ?? 0));
 
     const topGames = rawGames.slice(0, 200);
     const enriched = await Promise.all(
-      topGames.map(async (game) => {
+      topGames.map(async (game): Promise<SteamGame> => {
         try {
           const detailUrl = `https://store.steampowered.com/api/appdetails?appids=${game.appid}&l=schinese`;
           const detailRes = await fetch(detailUrl);
-          const detailJson = await detailRes.json();
+          const detailJson = (await detailRes.json()) as Record<string, { data?: SteamAppDetails }>;
           const detail = detailJson[game.appid]?.data;
           const genres = detail?.genres?.map((g) => g.description) || [];
           return {
@@ -68,7 +95,7 @@ if (!STEAM_API_KEY) {
     allGames = enriched;
   } catch (e) {
     console.error('Steam API 请求失败:', e);
-    error = e.message;
+    error = e instanceof Error ? e.message : String(e);
   }
 }
 

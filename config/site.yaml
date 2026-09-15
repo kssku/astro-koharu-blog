@@ -307,7 +307,7 @@ bangumi:
 # localProjectPath 改成你电脑上项目的实际路径
 # =============================================================================
 dev:
-  localProjectPath: 'W:\astro-koharu\'
+  localProjectPath: 'E:/github/astro-koharu-blog/'
   contentRelativePath: 'src/content/blog'
   editors:
     - id: vscode
