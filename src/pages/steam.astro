@@ -162,8 +162,8 @@ const totalCount = allGames.length;
   </TwoColumnLayout>
 </Layout>
 
-<!-- 使用 define:vars 注入数据 -->
-<script define:vars={{ games: allGames, topGenres }}>
+<!-- 使用 define:vars 注入数据；含属性即视为 is:inline，此处显式声明 -->
+<script is:inline define:vars={{ games: allGames, topGenres }}>
   (function() {
     if (!games || !games.length) {
       document.getElementById('game-list-container').innerHTML = '<p class="empty-msg">没有游戏数据，请检查配置。</p>';

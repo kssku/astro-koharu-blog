@@ -6,12 +6,15 @@ interface Props {
 }
 
 import { siteConfig } from '@constants/site-config';
+import { getFontStylesheetHrefs } from '@lib/fonts/registry';
 import { getOgImageUrl } from '@lib/seo/og-image';
 import { SEO } from 'astro-seo';
 import { defaultLocale, getAlternateUrl, getHtmlLang, isI18nEnabled, localeList, localizedPath } from '@/i18n';
 
 const { meta } = Astro.props;
 const { locale, title, description, openGraph, robots, includeLocaleAlternates = true } = meta;
+
+const fontStylesheetHrefs = getFontStylesheetHrefs(locale, defaultLocale);
 
 const resolveAbsoluteUrl = (value: string | undefined) => (value ? new URL(value, Astro.site).href : undefined);
 
@@ -37,18 +40,10 @@ const hreflangLinks = showLocaleAlternates
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
 <link rel="icon" type="image/svg+xml" href="/favicon.ico" />
 <meta name="generator" content={Astro.generator} />
-{/* Async load rounded fonts — Japanese pages use Gen Jyuu Gothic P, others use ChillRoundF (fix #113) */}
-{locale === 'ja' ? (
-  <>
-    <link rel="stylesheet" href="/fonts/GenJyuuGothic-P-Regular/result.css" media="print" onload="this.setAttribute('media','all')" />
-    <link rel="stylesheet" href="/fonts/GenJyuuGothic-P-Bold/result.css" media="print" onload="this.setAttribute('media','all')" />
-  </>
-) : (
-  <>
-    <link rel="stylesheet" href="/fonts/ChillRoundFRegular/result.css" media="print" onload="this.setAttribute('media','all')" />
-    <link rel="stylesheet" href="/fonts/ChillRoundFBold/result.css" media="print" onload="this.setAttribute('media','all')" />
-  </>
-)}
+{/* Async load rounded fonts — family resolved per locale, fallback to the default locale (fix #113) */}
+{fontStylesheetHrefs.map((href) => (
+  <link rel="stylesheet" href={href} media="print" onload="this.setAttribute('media','all')" />
+))}
 
 <!-- SEO 元数据由 astro-seo 管理 -->
 <SEO

@@ -47,13 +47,13 @@
     background: hsl(var(--primary) / 0.25);
   }
 
-  /* Japanese pages: use Gen Jyuu Gothic P for correct JIS glyphs (fix #113) */
+  /* Japanese text falls back through the CJK stack when no Japanese family ships */
   :lang(ja) {
-    font-family: "Gen Jyuu Gothic P", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    font-family: "寒蝉全圆体", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
   }
 
   :lang(ja) :is(h1, h2, h3, h4, h5, h6) {
-    font-family: "Gen Jyuu Gothic P", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    font-family: "寒蝉全圆体", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
   }
 
   html {

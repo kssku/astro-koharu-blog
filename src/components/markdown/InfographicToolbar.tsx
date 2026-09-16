@@ -9,11 +9,13 @@ import { ViewSourceToggle } from '@components/markdown/shared/ViewSourceToggle';
 import { useIsDarkTheme } from '@hooks/useIsDarkTheme';
 import { useTranslation } from '@hooks/useTranslation';
 import { Icon } from '@iconify/react';
+import { getLocaleFont } from '@lib/fonts/registry';
 import { openModal } from '@store/modal';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { defaultLocale } from '@/i18n';
 
 function getFontConfig(locale: string) {
-  const fontFamily = locale === 'ja' ? 'Gen Jyuu Gothic P' : '寒蝉全圆体';
+  const fontFamily = getLocaleFont(locale, defaultLocale)?.family ?? '寒蝉全圆体';
   return `
 theme
   base

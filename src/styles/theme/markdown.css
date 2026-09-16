@@ -812,7 +812,7 @@ html[data-reader-font="local"]:not(:lang(ja)) .prose :is(h1, h2, h3, h4, h5, h6)
 
 html[data-reader-font="local"]:lang(ja) .prose,
 html[data-reader-font="local"]:lang(ja) .prose :is(h1, h2, h3, h4, h5, h6) {
-  font-family: var(--reader-font-family), "Gen Jyuu Gothic P", "Hiragino Kaku Gothic ProN", "Yu Gothic", sans-serif;
+  font-family: var(--reader-font-family), "寒蝉全圆体", "Hiragino Kaku Gothic ProN", "Yu Gothic", sans-serif;
 }
 
 /* Reader text justification */
