@@ -21,8 +21,8 @@ npm install -g pnpm
 
 ```bash
 # 方式一：克隆仓库
-git clone https://github.com/cosZone/astro-koharu.git
-cd astro-koharu
+git clone https://github.com/kssku/astro-koharu-blog.git
+cd astro-koharu-blog
 
 # 方式二：使用 GitHub 模板（推荐）
 # 点击仓库页面的 "Use this template" 按钮
@@ -145,7 +145,7 @@ categories:
 
 ### Vercel 一键部署（推荐）
 
-[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https://github.com/cosZone/astro-koharu&project-name=astro-koharu&repository-name=astro-koharu)
+[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https://github.com/kssku/astro-koharu-blog&project-name=astro-koharu-blog&repository-name=astro-koharu-blog)
 
 1. 点击上方按钮
 2. 登录 GitHub 账号
