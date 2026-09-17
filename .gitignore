@@ -40,3 +40,14 @@ backups/
 .pnpm-store/
 .cache/
 node_modules/
+
+# local helper scripts (contains machine-specific paths)
+auto_push.sh
+
+# Windows junk / logs / backups
+Thumbs.db
+desktop.ini
+dev.log
+*.log.bak
+*.bak
+test_*.txt
