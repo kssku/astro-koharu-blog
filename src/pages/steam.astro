@@ -44,7 +44,7 @@ const title = `🎮 Steam 游戏库 | ${siteConfig.title}`;
 const description = '通过 Steam Web API 自动同步的游戏列表，支持分类筛选与排序';
 
 // -------- Steam API 配置 --------
-const STEAM_API_KEY = process.env.STEAM_API_KEY;
+const STEAM_API_KEY = process.env.STEAM_API_KEY || import.meta.env.STEAM_API_KEY;
 const STEAM_ID = '76561199521447257';
 
 let allGames: SteamGame[] = [];
@@ -284,7 +284,7 @@ const totalCount = allGames.length;
   gap: 8px;
   margin-bottom: 20px;
   padding-bottom: 12px;
-  border-bottom: 2px solid var(--border-color, #dce8f0);
+  border-bottom: 2px solid var(--border-color, #f7d6e0);
 }
 
 .genre-tab {
@@ -318,7 +318,7 @@ const totalCount = allGames.length;
 }
 
 .genre-tab.active {
-  background: linear-gradient(135deg, #6bc5f5, #4a9eff);
+  background: linear-gradient(135deg, #f27a8a, #e91e63);
   color: #fff;
   font-weight: 600;
   box-shadow: 0 4px 12px rgba(74, 158, 255, 0.25);
@@ -365,7 +365,7 @@ const totalCount = allGames.length;
 .controls-right select {
   background: #fff;
   color: var(--text-color, #4a2c4a);
-  border: 1px solid var(--border-color-light, #dce8f0);
+  border: 1px solid var(--border-color-light, #f7d6e0);
   padding: 6px 14px;
   border-radius: 30px;
   font-size: 0.9rem;
@@ -381,8 +381,8 @@ const totalCount = allGames.length;
 }
 
 .controls-right select:hover {
-  border-color: #6bc5f5;
-  box-shadow: 0 2px 8px rgba(107, 197, 245, 0.2);
+  border-color: #f27a8a;
+  box-shadow: 0 2px 8px rgba(233, 30, 99, 0.2);
 }
 
 /* ===== 游戏网格 ===== */
@@ -400,14 +400,14 @@ const totalCount = allGames.length;
   background: var(--card-bg, #ffffff);
   border-radius: 16px;
   overflow: hidden;
-  box-shadow: 0 4px 16px rgba(107, 197, 245, 0.08);
+  box-shadow: 0 4px 16px rgba(233, 30, 99, 0.08);
   transition: transform 0.3s cubic-bezier(0.2, 0, 0, 1), box-shadow 0.3s ease;
   border: 1px solid var(--border-color-light, #f0e6ec);
 }
 
 .game-item:hover {
   transform: translateY(-8px);
-  box-shadow: 0 16px 40px rgba(107, 197, 245, 0.18), 0 0 0 1px rgba(107, 197, 245, 0.08);
+  box-shadow: 0 16px 40px rgba(233, 30, 99, 0.18), 0 0 0 1px rgba(233, 30, 99, 0.08);
 }
 
 .game-image-wrap {
@@ -448,16 +448,16 @@ const totalCount = allGames.length;
 }
 
 .game-info {
-  padding: 14px 16px 18px;
+  padding: 12px 14px 14px;
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 5px;
   flex: 1;
 }
 
 .game-name {
-  font-weight: 600;
-  font-size: 1rem;
+  font-weight: 700;
+  font-size: 0.98rem;
   color: var(--text-color, #3d2a3d);
   line-height: 1.4;
   display: -webkit-box;
@@ -468,9 +468,15 @@ const totalCount = allGames.length;
 }
 
 .game-price {
-  font-size: 0.9rem;
+  display: inline-flex;
+  align-items: center;
+  align-self: flex-start;
+  font-size: 0.78rem;
   font-weight: 600;
-  color: #4a9eff;
+  color: #e91e63;
+  background: rgba(233, 30, 99, 0.1);
+  padding: 2px 8px;
+  border-radius: 999px;
   margin-top: 2px;
 }
 
@@ -483,39 +489,51 @@ const totalCount = allGames.length;
   display: inline-flex;
   align-items: center;
   gap: 4px;
-  font-size: 0.8rem;
-  color: var(--text-color-secondary, #a88290);
+  align-self: flex-start;
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: #fff;
+  background: #9e9e9e;
+  padding: 2px 8px;
+  border-radius: 999px;
   margin-top: 2px;
 }
 
 .game-rating .score {
-  color: var(--text-color, #4a2c4a);
-  font-weight: 600;
+  color: inherit;
+  font-weight: 700;
 }
 
-.game-rating.good .score { color: #2e7d32; }
-.game-rating.mid .score { color: #f5a623; }
-.game-rating.bad .score { color: #d32f2f; }
+.game-rating.good { background: #43a047; }
+.game-rating.good .score { color: #fff; }
+.game-rating.mid { background: #f5a623; }
+.game-rating.mid .score { color: #fff; }
+.game-rating.bad { background: #e53935; }
+.game-rating.bad .score { color: #fff; }
 
 .game-genres {
-  font-size: 0.75rem;
-  color: var(--text-color-secondary, #b89aa8);
-  margin-top: 2px;
-  letter-spacing: 0.02em;
+  font-size: 0.7rem;
+  color: #b56b8a;
+  background: rgba(233, 30, 99, 0.07);
+  padding: 1px 7px;
+  border-radius: 6px;
+  align-self: flex-start;
+  margin-top: 1px;
+  letter-spacing: 0.01em;
 }
 
 .game-playtime {
-  font-size: 0.75rem;
+  font-size: 0.72rem;
   color: var(--text-color-secondary, #b89aa8);
-  margin-top: 6px;
-  border-top: 1px solid var(--border-color-light, #f0e6ec);
-  padding-top: 8px;
+  margin-top: 5px;
+  border-top: 1px dashed rgba(233, 30, 99, 0.15);
+  padding-top: 6px;
 }
 
 .game-last-played {
-  font-size: 0.7rem;
+  font-size: 0.68rem;
   color: var(--text-color-tertiary, #ccb0be);
-  margin-top: 4px;
+  margin-top: 2px;
 }
 
 .error-msg {
@@ -667,7 +685,7 @@ const totalCount = allGames.length;
   color: #fff;
 }
 :global(.dark) .genre-tab.active {
-  background: linear-gradient(135deg, #4a9eff, #6bc5f5);
+  background: linear-gradient(135deg, #e91e63, #f27a8a);
   color: #fff;
 }
 </style>
