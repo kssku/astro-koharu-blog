@@ -250,6 +250,7 @@ const totalCount = allGames.length;
                   最近游玩：${new Date(game.rtime_last_played * 1000).toLocaleDateString('zh-CN')}
                 </span>
               ` : ''}
+              <a class="game-more" href="https://store.steampowered.com/app/${game.appid}" target="_blank" rel="noopener" aria-label="在 Steam 查看">more...</a>
             </div>
           </li>
         `;
@@ -400,14 +401,14 @@ const totalCount = allGames.length;
   background: var(--card-bg, #ffffff);
   border-radius: 16px;
   overflow: hidden;
-  box-shadow: 0 4px 16px rgba(233, 30, 99, 0.08);
+  box-shadow: var(--box-bg-shadow, rgba(0,0,0,0.1)) 0px 5px 15px;
   transition: transform 0.3s cubic-bezier(0.2, 0, 0, 1), box-shadow 0.3s ease;
   border: 1px solid var(--border-color-light, #f0e6ec);
 }
 
 .game-item:hover {
-  transform: translateY(-8px);
-  box-shadow: 0 16px 40px rgba(233, 30, 99, 0.18), 0 0 0 1px rgba(233, 30, 99, 0.08);
+  transform: translateY(-6px);
+  box-shadow: 0 0 2rem var(--box-bg-shadow, rgba(0,0,0,0.2));
 }
 
 .game-image-wrap {
@@ -430,7 +431,7 @@ const totalCount = allGames.length;
 }
 
 .game-item:hover .game-image-wrap img {
-  transform: scale(1.05);
+  transform: scale(1.1) rotate(3deg);
 }
 
 .game-image-placeholder {
@@ -534,6 +535,27 @@ const totalCount = allGames.length;
   font-size: 0.68rem;
   color: var(--text-color-tertiary, #ccb0be);
   margin-top: 2px;
+}
+
+/* more button - home card style */
+.game-more {
+  align-self: flex-end;
+  margin-top: 6px;
+  padding: 3px 14px;
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: #fff;
+  text-decoration: none;
+  background: var(--gradient-shoka-button, linear-gradient(to right, #ed6ea0 0, #ec8c69 100%));
+  border-radius: 12px;
+  border-start-end-radius: 0;
+  border-end-start-radius: 0;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.game-more:hover {
+  transform: translateX(4px);
+  box-shadow: 0 4px 12px var(--color-pink-a3, rgba(237,110,160,0.3));
 }
 
 .error-msg {
