@@ -28,7 +28,7 @@ const filteredRouters = filterNavItems(routers, configuredSeriesSlugs, enabledSe
 
 // Icon component for navigation items - uses @iconify/react for dynamic icons
 function NavIcon({ name }: { name: string }) {
-  return <Icon icon={name} className="mr-1.5 h-4 w-4" />;
+  return <Icon icon={name} className="mr-1.5 h-4 w-4 shrink-0" />;
 }
 
 // Button link component
@@ -45,7 +45,7 @@ function ButtonLink({ url, label, isActive, children }: ButtonLinkProps) {
       href={url}
       aria-label={label}
       className={cn(
-        'relative flex items-center px-3 py-2 text-base tracking-wider',
+        'relative flex items-center whitespace-nowrap px-3 py-2 text-base tracking-wider',
         'after:absolute after:bottom-1 after:left-1/2 after:block after:h-0.5 after:w-0 after:-translate-x-1/2 after:transition-all after:duration-300',
         'hover:after:w-9/12',
         isActive && 'after:w-9/12',

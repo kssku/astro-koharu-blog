@@ -201,21 +201,21 @@ navigation:
     path: /
     icon: ri:home-heart-fill
 
-  - name: 随笔
-    path: /categories/life
-    icon: ri:book-line
-
-  - name: 游戏
-    path: /categories/game
-    icon: ri:gamepad-line
-
-  - name: 动漫
-    path: /categories/anime
-    icon: ri:film-line
-
-  - name: 教程
-    path: /categories/tutorial
-    icon: ri:book-open-line
+  - name: 杂货铺
+    icon: ri:store-2-line
+    children:
+      - name: 随笔
+        path: /categories/life
+        icon: ri:book-line
+      - name: 游戏
+        path: /categories/game
+        icon: ri:gamepad-line
+      - name: 动漫
+        path: /categories/anime
+        icon: ri:film-line
+      - name: 教程
+        path: /categories/tutorial
+        icon: ri:book-open-line
 
   - name: 文章
     nameKey: nav.posts
@@ -234,9 +234,9 @@ navigation:
         path: /archives
         icon: ri:archive-2-fill
 
-  - name: Steam          # 👈 新增
-    path: /steam         # 👈 对应 src/pages/steam.astro
-    icon: ri:steam-fill  # 👈 或者用 fa-brands:steam
+  - name: Steam
+    path: /steam
+    icon: ri:steam-fill
 
   - name: 关于
     nameKey: nav.about

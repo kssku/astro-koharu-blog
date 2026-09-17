@@ -71,7 +71,7 @@ const strippedPath = stripLocaleFromPath(Astro.url.pathname);
       {t(locale, 'homeInfo.tags')}
     </a>
   </div>
-  <div class="mt-6 flex w-full flex-col items-center gap-2.5">
+  <div class="mt-6 grid w-full grid-cols-2 gap-2.5">
     {
       filteredRouters.map((item, index) => {
         const displayName = resolveNavName(item.nameKey, item.name, locale);
@@ -79,7 +79,7 @@ const strippedPath = stripLocaleFromPath(Astro.url.pathname);
           const collapseId = `${uniqueId}-collapse-${index}`;
           return (
             <div
-              class="bg-foreground/10 flex w-40 flex-col rounded-xl opacity-75 transition-all duration-300 hover:opacity-100"
+              class="bg-foreground/10 col-span-2 flex w-full flex-col rounded-xl opacity-75 transition-all duration-300 hover:opacity-100"
               data-collapsible
             >
               <button
@@ -98,7 +98,7 @@ const strippedPath = stripLocaleFromPath(Astro.url.pathname);
                 />
               </button>
               <div class="collapse-hidden" data-collapse-content={collapseId}>
-                <div class="flex flex-col items-center">
+                <div class="grid grid-cols-2 gap-2.5">
                   {item.children.map((child) => {
                     const childName = resolveNavName(child.nameKey, child.name, locale);
                     const childUrl = child.path
@@ -111,7 +111,7 @@ const strippedPath = stripLocaleFromPath(Astro.url.pathname);
                         url={childUrl}
                         label={childName}
                         variant="gradient-shoka"
-                        className={cn('shoka-button-shadow h-12 w-40 rounded-xl text-base tracking-wider', {
+                        className={cn('shoka-button-shadow h-12 w-full rounded-xl text-base tracking-wider', {
                           'text-muted-foreground/80 hover:bg-muted-foreground/10 bg-none shadow-none hover:shadow-none':
                             child.path !== strippedPath,
                         })}
@@ -133,7 +133,7 @@ const strippedPath = stripLocaleFromPath(Astro.url.pathname);
             label={displayName}
             variant="gradient-shoka"
             className={cn(
-              'shoka-button-shadow h-12 w-40 rounded-xl text-base tracking-wider opacity-75 transition-all duration-300 hover:opacity-100',
+              'shoka-button-shadow h-12 w-full rounded-xl text-base tracking-wider opacity-75 transition-all duration-300 hover:opacity-100',
               {
                 'text-muted-foreground/80 hover:bg-muted-foreground/10 bg-none shadow-none hover:shadow-none':
                   item.path !== strippedPath,
