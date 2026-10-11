@@ -1,0 +1,125 @@
+# Decap CMS 配置 —— astro-koharu-blog
+# 文档：https://decapcms.org/docs/configuration-options/
+#
+# 后端：GitHub + 自建 OAuth 代理（functions/oauth/github.ts，部署在 CF Pages 的 /oauth/github）。
+# 需在 CF Pages 环境变量里配好 GITHUB_CLIENT_ID / GITHUB_CLIENT_SECRET。
+#
+# 设计说明：
+#   文章按分类目录组织（anime/ diary/ game/ life/），
+#   因此拆成四个 collection，各自 folder 指向自己的目录。
+#   这样 slug 用默认模板 {{slug}}（title 的 URL 安全化版本），
+#   避开「单 collection + path 带斜杠」时 path 与 slug 互相覆盖的坑
+#   （见 decaporg/decap-cms#4092、#4972）。
+
+backend:
+  name: github
+  repo: kssku/astro-koharu-blog
+  branch: main
+  # 自建 OAuth 代理所在站点根；Decap 会请求 <base_url>/oauth/github
+  base_url: https://blog.kssku.top
+  auth_endpoint: oauth/github
+
+# 本地开发：pnpm cms 起本地服务时走这个（npx decap-server）
+local_backend: true
+
+# 直连 main 分支提交，不启用 editorial_workflow（那个会走 PR，不符「/admin 直接写」）
+publish_mode: simple
+
+# 媒体文件：存到 public/img/uploads，frontmatter 里写 /img/uploads/xxx
+media_folder: public/img/uploads
+public_folder: /img/uploads
+
+# 中文界面
+locale: zh_Hans
+
+site_url: https://blog.kssku.top
+
+# ============================================================
+# 公共字段片段（YAML 锚点，四个 collection 复用）
+# ============================================================
+
+collections:
+  - name: anime
+    label: 动漫
+    label_singular: 动漫文章
+    folder: src/content/blog/anime
+    create: true
+    slug: '{{slug}}'
+    extension: md
+    format: frontmatter
+    summary: '{{title}}  ·  {{date}}'
+    sortable_fields: ['date', 'title']
+    fields: &blog_fields
+      # 兜住旧文章里的 link 字段（Decap 会丢弃未声明的 frontmatter 字段）
+      # 隐藏不显示，但读写时保留其值
+      - label: 内部链接标识
+        name: link
+        widget: hidden
+        required: false
+      - label: 标题
+        name: title
+        widget: string
+      - label: 发布日期
+        name: date
+        widget: datetime
+        date_format: YYYY-MM-DD
+        time_format: false
+        format: YYYY-MM-DD
+      - label: 分类
+        name: categories
+        widget: list
+        required: false
+        default: []
+      - label: 标签
+        name: tags
+        widget: list
+        required: false
+        default: []
+      - label: 封面图
+        name: cover
+        widget: image
+        required: false
+        hint: '建议 /img/cover/N.webp'
+      - label: 摘要
+        name: description
+        widget: text
+        required: false
+      - label: 正文
+        name: body
+        widget: markdown
+
+  - name: diary
+    label: 日记
+    label_singular: 日记
+    folder: src/content/blog/diary
+    create: true
+    slug: '{{slug}}'
+    extension: md
+    format: frontmatter
+    summary: '{{title}}  ·  {{date}}'
+    sortable_fields: ['date', 'title']
+    fields: *blog_fields
+
+  - name: game
+    label: 游戏
+    label_singular: 游戏文章
+    folder: src/content/blog/game
+    create: true
+    slug: '{{slug}}'
+    extension: md
+    format: frontmatter
+    summary: '{{title}}  ·  {{date}}'
+    sortable_fields: ['date', 'title']
+    fields: *blog_fields
+
+  - name: life
+    label: 生活
+    label_singular: 生活文章
+    folder: src/content/blog/life
+    create: true
+    slug: '{{slug}}'
+    extension: md
+    format: frontmatter
+    summary: '{{title}}  ·  {{date}}'
+    sortable_fields: ['date', 'title']
+    fields: *blog_fields
