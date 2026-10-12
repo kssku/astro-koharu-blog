@@ -1,6 +1,4 @@
-﻿/* Steam 页面样式（全局，供客户端动态渲染的卡片使用） */
-
-/* ===== 全局样式 ===== */
+/* Steam 页面样式（全局，供客户端动态渲染的卡片使用） */ /* ===== 全局样式 ===== */
 .steam-subtitle {
   color: var(--text-color-secondary, #a88290);
   font-size: 0.95rem;
@@ -136,13 +134,15 @@
   background: var(--card-bg, #ffffff);
   border-radius: 12px;
   overflow: hidden;
-  box-shadow: var(--box-bg-shadow, rgba(0,0,0,0.1)) 0px 5px 15px;
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  box-shadow: var(--box-bg-shadow, rgba(0, 0, 0, 0.1)) 0px 5px 15px;
+  transition:
+    transform 0.3s ease,
+    box-shadow 0.3s ease;
   border: 1px solid var(--border-color-light, #f0e6ec);
 }
 
 .game-item:hover {
-  box-shadow: 0 0 2rem var(--box-bg-shadow, rgba(0,0,0,0.2));
+  box-shadow: 0 0 2rem var(--box-bg-shadow, rgba(0, 0, 0, 0.2));
 }
 
 /* 图片区：占约 42%，斜切角 */
@@ -223,9 +223,18 @@
   background: rgba(233, 30, 99, 0.08);
   white-space: nowrap;
 }
-.game-tag.rating-good { color: #fff; background: #43a047; }
-.game-tag.rating-mid { color: #fff; background: #f5a623; }
-.game-tag.rating-bad { color: #fff; background: #e53935; }
+.game-tag.rating-good {
+  color: #fff;
+  background: #43a047;
+}
+.game-tag.rating-mid {
+  color: #fff;
+  background: #f5a623;
+}
+.game-tag.rating-bad {
+  color: #fff;
+  background: #e53935;
+}
 
 .game-name {
   font-weight: 700;
@@ -253,10 +262,19 @@
   padding: 2px 10px;
   border-radius: 999px;
 }
-.game-rating .score { color: inherit; font-weight: 700; }
-.game-rating.good { background: #43a047; }
-.game-rating.mid { background: #f5a623; }
-.game-rating.bad { background: #e53935; }
+.game-rating .score {
+  color: inherit;
+  font-weight: 700;
+}
+.game-rating.good {
+  background: #43a047;
+}
+.game-rating.mid {
+  background: #f5a623;
+}
+.game-rating.bad {
+  background: #e53935;
+}
 
 .game-genres {
   font-size: 0.72rem;
@@ -277,7 +295,8 @@
   border-top: 1px dashed rgba(233, 30, 99, 0.15);
   padding-top: 8px;
 }
-.game-playtime, .game-last-played {
+.game-playtime,
+.game-last-played {
   font-size: 0.75rem;
   color: var(--text-color-secondary, #b89aa8);
 }
@@ -295,11 +314,13 @@
   border-radius: 12px;
   border-start-end-radius: 0;
   border-end-start-radius: 0;
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  transition:
+    transform 0.3s ease,
+    box-shadow 0.3s ease;
 }
 .game-more:hover {
   transform: translateX(4px);
-  box-shadow: 0 4px 12px var(--color-pink-a3, rgba(237,110,160,0.3));
+  box-shadow: 0 4px 12px var(--color-pink-a3, rgba(237, 110, 160, 0.3));
 }
 
 .error-msg {
@@ -322,20 +343,37 @@
 
 /* 桌面宽屏（≥1024px） */
 @media (min-width: 1024px) {
-  .game-image-wrap { width: 50%; }
-  .game-info { padding: 26px 34px; gap: 12px; }
-  .game-name { font-size: 1.35rem; }
+  .game-image-wrap {
+    width: 50%;
+  }
+  .game-info {
+    padding: 26px 34px;
+    gap: 12px;
+  }
+  .game-name {
+    font-size: 1.35rem;
+  }
 }
 
 @media (min-width: 641px) and (max-width: 1023px) {
-  .game-image-wrap { width: 40%; }
-  .game-info { padding: 16px 20px; gap: 8px; }
-  .game-name { font-size: 1.05rem; }
+  .game-image-wrap {
+    width: 40%;
+  }
+  .game-info {
+    padding: 16px 20px;
+    gap: 8px;
+  }
+  .game-name {
+    font-size: 1.05rem;
+  }
 }
 
 /* 手机（<=640px）：改回竖排，图在上 */
 @media (max-width: 640px) {
-  .game-item { flex-direction: column; min-height: 0; }
+  .game-item {
+    flex-direction: column;
+    min-height: 0;
+  }
   .game-item.img-left .game-image-wrap,
   .game-item.img-right .game-image-wrap {
     order: 0;
@@ -343,20 +381,62 @@
     clip-path: none;
     padding-top: 56.25%;
   }
-  .game-info { padding: 12px 14px 14px; gap: 6px; }
-  .game-name { font-size: 0.98rem; }
-  .game-stats { gap: 10px; font-size: 0.7rem; }
-  .game-playtime, .game-last-played { font-size: 0.7rem; }
+  .game-info {
+    padding: 12px 14px 14px;
+    gap: 6px;
+  }
+  .game-name {
+    font-size: 0.98rem;
+  }
+  .game-stats {
+    gap: 10px;
+    font-size: 0.7rem;
+  }
+  .game-playtime,
+  .game-last-played {
+    font-size: 0.7rem;
+  }
   /* 调整控制栏 */
-  .steam-controls { flex-direction: column; align-items: stretch; gap: 10px; padding: 10px 12px; }
-  .controls-left, .controls-right { justify-content: center; }
-  .controls-right select { font-size: 0.85rem; padding: 4px 12px; padding-right: 32px; }
-  .genre-tabs { gap: 6px; padding-bottom: 8px; }
-  .genre-tab { font-size: 0.7rem; padding: 4px 12px; border-radius: 20px; }
-  .genre-tab .count { font-size: 0.6rem; padding: 0 4px; }
-  .steam-subtitle { font-size: 0.85rem; margin-bottom: 12px; }
-  .error-msg { padding: 12px 16px; font-size: 0.9rem; }
-  .empty-msg { padding: 30px 0; font-size: 1rem; }
+  .steam-controls {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 10px;
+    padding: 10px 12px;
+  }
+  .controls-left,
+  .controls-right {
+    justify-content: center;
+  }
+  .controls-right select {
+    font-size: 0.85rem;
+    padding: 4px 12px;
+    padding-right: 32px;
+  }
+  .genre-tabs {
+    gap: 6px;
+    padding-bottom: 8px;
+  }
+  .genre-tab {
+    font-size: 0.7rem;
+    padding: 4px 12px;
+    border-radius: 20px;
+  }
+  .genre-tab .count {
+    font-size: 0.6rem;
+    padding: 0 4px;
+  }
+  .steam-subtitle {
+    font-size: 0.85rem;
+    margin-bottom: 12px;
+  }
+  .error-msg {
+    padding: 12px 16px;
+    font-size: 0.9rem;
+  }
+  .empty-msg {
+    padding: 30px 0;
+    font-size: 1rem;
+  }
 }
 
 /* 暗色模式适配 */
