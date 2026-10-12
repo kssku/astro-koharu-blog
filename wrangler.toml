@@ -7,3 +7,7 @@
 name = "astro-koharu-blog"
 compatibility_date = "2026-10-01"
 pages_build_output_dir = "dist"
+
+# 明文运行时变量（非机密）。机密（GITHUB_CLIENT_SECRET）走 CF 仪表板的加密机密，绝不写入本文件。
+[vars]
+GITHUB_CLIENT_ID = "Ov23liSDJSV9SjcxKlXI"
