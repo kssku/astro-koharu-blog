@@ -6,6 +6,16 @@
   "engines": {
     "node": ">=22.20.0"
   },
+  "pnpm": {
+    "onlyBuiltDependencies": [
+      "esbuild",
+      "nice-napi",
+      "onnxruntime-node",
+      "protobufjs",
+      "re2",
+      "sharp"
+    ]
+  },
   "scripts": {
     "dev": "pnpm koharu migrate --check && astro dev",
     "generate:lqips": "npx tsx src/scripts/generateLqips.ts",
@@ -14,7 +24,7 @@
     "generate:summaries": "npx tsx src/scripts/generateSummaries.ts",
     "generate:summaries:force": "npx tsx src/scripts/generateSummaries.ts --force",
     "generate:all": "npm run generate:lqips && npm run generate:summaries && npm run generate:similarities",
-    "build": "pnpm koharu migrate --check && astro build",
+    "build": "pnpm koharu migrate --check && astro build && rm -rf dist/functions && cp -r functions dist/functions",
     "preview": "astro preview",
     "astro": "astro",
     "check": "astro check",

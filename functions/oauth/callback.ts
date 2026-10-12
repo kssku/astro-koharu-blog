@@ -98,20 +98,28 @@ export const onRequest: PagesFunction = async (context) => {
     );
   }
 
-  const tokenResponse = await fetch(GITHUB_TOKEN_URL, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      Accept: 'application/json',
-    },
-    body: JSON.stringify({
-      client_id: clientId,
-      client_secret: clientSecret,
-      code,
-    }),
-  });
-
-  const tokenData = await tokenResponse.json();
+  let tokenData: Record<string, string>;
+  try {
+    const tokenResponse = await fetch(GITHUB_TOKEN_URL, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Accept: 'application/json',
+      },
+      body: JSON.stringify({
+        client_id: clientId,
+        client_secret: clientSecret,
+        code,
+      }),
+    });
+    tokenData = (await tokenResponse.json()) as Record<string, string>;
+  } catch (err) {
+    const reason = err instanceof Error ? err.message : 'token_exchange_failed';
+    return new Response(renderHtml('error', `error: ${reason}`, `换取 token 失败：${reason}`), {
+      status: 502,
+      headers: { 'Content-Type': 'text/html; charset=utf-8', 'Cache-Control': 'no-cache' },
+    });
+  }
 
   if (!tokenData.access_token) {
     const reason = tokenData.error_description || tokenData.error || 'unknown_error';

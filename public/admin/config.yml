@@ -1,7 +1,9 @@
 # Decap CMS 配置 —— astro-koharu-blog
 # 文档：https://decapcms.org/docs/configuration-options/
 #
-# 后端：GitHub + 自建 OAuth 代理（functions/oauth/github.ts，部署在 CF Pages 的 /oauth/github）。
+# 后端：GitHub + 自建 OAuth 代理，拆成两个 CF Pages Function：
+#   /oauth/auth     —— 发起授权跳转（functions/oauth/auth.ts）
+#   /oauth/callback —— 用 code 换 token，postMessage 回弹窗（functions/oauth/callback.ts）
 # 需在 CF Pages 环境变量里配好 GITHUB_CLIENT_ID / GITHUB_CLIENT_SECRET。
 #
 # 设计说明：
@@ -15,9 +17,14 @@ backend:
   name: github
   repo: kssku/astro-koharu-blog
   branch: main
-  # 自建 OAuth 代理所在站点根；Decap 会请求 <base_url>/oauth/github
+  # 自建 OAuth 代理所在站点根
+  #   /oauth/auth     —— 发起授权跳转（functions/oauth/auth.ts）
+  #   /oauth/callback —— code 换 token 并 postMessage 回弹窗（functions/oauth/callback.ts）
+  # 注意：auth_endpoint 只填 "oauth/auth"（不含前导斜杠），Decap 内部按
+  #       `${base_url}/${auth_endpoint}` 拼接；GitHub OAuth App 的
+  #       Authorization callback URL 必须填 https://blog.kssku.top/oauth/callback
   base_url: https://blog.kssku.top
-  auth_endpoint: oauth/github
+  auth_endpoint: oauth/auth
 
 # 本地开发：pnpm cms 起本地服务时走这个（npx decap-server）
 local_backend: true
