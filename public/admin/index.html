@@ -5,6 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="robots" content="noindex" />
     <title>内容管理 · 红尘笑的小窝</title>
+    <!-- 显式声明配置路径（绝对路径），避免 /admin 无尾斜杠时相对解析成 /config.yml -->
+    <link href="/admin/config.yml" type="text/yaml" rel="cms-config-url" />
   </head>
   <body>
     <!-- Decap CMS 会自动挂载到这里，并读取同目录的 config.yml -->

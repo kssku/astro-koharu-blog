@@ -27,7 +27,8 @@ backend:
   auth_endpoint: oauth/auth
 
 # 本地开发：pnpm cms 起本地服务时走这个（npx decap-server）
-local_backend: true
+# 线上必须保持注释——开着会让 Decap 去探 localhost:8081，线上登录流程会走偏。
+# local_backend: true
 
 # 直连 main 分支提交，不启用 editorial_workflow（那个会走 PR，不符「/admin 直接写」）
 publish_mode: simple
