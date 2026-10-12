@@ -36,8 +36,12 @@ export const onRequest: PagesFunction = async (context) => {
     });
   }
 
-  // 回调地址固定指向本站的 /oauth/callback，与 GitHub OAuth App 登记值保持一致
-  const redirectUri = `${url.origin}/oauth/callback`;
+  // 回调地址固定指向正式域的 /oauth/callback，与 GitHub OAuth App 登记值保持一致。
+  // 注意：绝不能用 url.origin —— CF Pages 内部路由会把 request.url 的 host
+  //       变成部署域 *.pages.dev，拼出的 redirect_uri 与登记值不符，GitHub 会
+  //       按登记值回跳甚至报错，最终 /session 拿不到 code（missing_code）。
+  const siteUrl = env.SITE_URL || 'https://blog.kssku.top';
+  const redirectUri = `${siteUrl}/oauth/callback`;
 
   const authorizeUrl = new URL('https://github.com/login/oauth/authorize');
   authorizeUrl.searchParams.set('client_id', clientId);

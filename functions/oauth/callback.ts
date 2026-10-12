@@ -36,8 +36,11 @@ function renderHtml(status: 'success' | 'error', payload: string, message: strin
 
   function receiveMessage() {
     // Decap 的握手：父窗口先发 "authorizing:github"，子窗口回发带 token 的消息
-    // 收窄 targetOrigin：CMS 与回调页同域，用本页 origin 即可，避免 token 流向任意窗口
-    window.opener.postMessage(message, window.location.origin);
+    // targetOrigin 必须用 '*'，不能用 window.location.origin：
+    //   CF Pages 自定义域（blog.kssku.top）背后是部署域（*.pages.dev），
+    //   弹窗与实际页面的 origin 可能不一致，收窄会导致 postMessage 被静默丢弃，
+    //   token 送不回 CMS。Decap 官方模板同样用 '*'。
+    window.opener.postMessage(message, '*');
     window.removeEventListener('message', receiveMessage, false);
     if (status === 'success') {
       setTimeout(function () { window.close(); }, 500);
@@ -46,8 +49,8 @@ function renderHtml(status: 'success' | 'error', payload: string, message: strin
 
   if (window.opener) {
     window.addEventListener('message', receiveMessage, false);
-    // 同域回发握手，targetOrigin 收窄到本页 origin
-    window.opener.postMessage('authorizing:github', window.location.origin);
+    // 握手同样用 '*'，理由见上
+    window.opener.postMessage('authorizing:github', '*');
   } else {
     document.getElementById('msg').textContent =
       message === '' ? '授权完成，但未找到父窗口，请手动关闭本页。' : message;
