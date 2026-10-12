@@ -1,13 +1,8 @@
 # Cloudflare Pages 配置
-# 作用：告诉 CF Pages 静态资源目录在 dist/，同时让仓库根的 functions/ 被识别为 Pages Functions。
-# 背景：Astro output 为 'static'，构建产物只出 dist/；若不声明 pages_build_output_dir，
-#       CF 会把整个仓库当站点根而找不到 functions/，导致 /oauth/* 全部 404。
-# 文档：https://developers.cloudflare.com/pages/functions/routing/
+# 作用：告诉 CF Pages 静态资源目录在 dist/。
+# 背景：Astro output 为 'static'，构建产物只出 dist/。
+# 文档：https://developers.cloudflare.com/pages/configuration/build-configuration/
 
 name = "astro-koharu-blog"
 compatibility_date = "2026-10-01"
 pages_build_output_dir = "dist"
-
-# 明文运行时变量（非机密）。机密（GITHUB_CLIENT_SECRET）走 CF 仪表板的加密机密，绝不写入本文件。
-[vars]
-GITHUB_CLIENT_ID = "Ov23liSDJSV9SjcxKlXI"

@@ -1,4 +1,9 @@
-# Decap CMS 部署核对清单
+# Decap CMS 部署核对清单（已废弃）
+
+> ⚠️ **本文档已废弃，仅作历史留存。**
+> Decap CMS 后台及 OAuth 代理已于 commit `80c609f`（2026-10-12）整体移除：
+> `functions/`（oauth/auth、oauth/callback、session）与 `public/admin/` 均已删除。
+> 下文描述的登录链路、环境变量与 GitHub OAuth App 配置**不再适用**。
 
 > 面向：站点维护者（红尘笑）
 > 场景：`public/admin/` 已随仓库发布，CMS 后台在 `/admin/`，
