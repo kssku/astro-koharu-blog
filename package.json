@@ -38,7 +38,7 @@
     "change": "git cliff --bump -o CHANGELOG.md",
     "prepare": "husky",
     "knip": "knip",
-    "koharu": "npx tsx scripts/koharu.tsx",
+    "koharu": "npx tsx --tsconfig scripts/tsconfig.json scripts/koharu.tsx",
     "migrate": "pnpm koharu migrate",
     "save-slugs": "npx tsx scripts/save-slugs.ts",
     "test": "npm run test:config && npm run test:fonts && npm run test:markdown && npm run test:toc && npm run test:migrate && npm run test:moments",

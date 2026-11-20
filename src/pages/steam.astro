@@ -1,4 +1,4 @@
-﻿---
+---
 import HomeSider from '@components/layout/HomeSider.astro';
 import Cover from '@components/ui/cover/Cover.astro';
 import { CONTENT_PADDING } from '@constants/layout';
@@ -17,20 +17,17 @@ interface SteamGame {
   appid: number;
   name?: string;
   playtime_forever?: number;
-  price?: string | null;
-  rating?: number | null;
+  rtime_last_played?: number;
   headerImage?: string;
   genres?: string[];
   genresDisplay?: string | null;
-  releaseDate?: string | null;
-  developer?: string | null;
-  releaseYear?: string | null;
 }
 
 interface SteamApiGame {
   appid: number;
   name?: string;
   playtime_forever?: number;
+  rtime_last_played?: number;
 }
 
 interface SteamAppDetails {
@@ -52,7 +49,35 @@ const STEAM_API_KEY = process.env.STEAM_API_KEY || import.meta.env.STEAM_API_KEY
 const STEAM_ID = '76561199521447257';
 
 let allGames: SteamGame[] = [];
+let totalOwnedCount = 0;
 let error: string | null = null;
+
+/** 分批并发，避免 Steam appdetails 限流（429） */
+const BATCH_SIZE = 10;
+const BATCH_DELAY_MS = 300;
+const DETAIL_LIMIT = 200;
+const UA = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36';
+
+const fallbackImage = (appid: number) => `https://steamcdn-a.akamaihd.net/steam/apps/${appid}/header.jpg`;
+
+async function fetchGameDetail(game: SteamApiGame): Promise<SteamGame> {
+  try {
+    const detailRes = await fetch(`https://store.steampowered.com/api/appdetails?appids=${game.appid}&l=schinese`, {
+      headers: { 'User-Agent': UA },
+    });
+    const detailJson = (await detailRes.json()) as Record<string, { data?: SteamAppDetails }>;
+    const detail = detailJson[game.appid]?.data;
+    const genres = detail?.genres?.map((g) => g.description) || [];
+    return {
+      ...game,
+      headerImage: detail?.header_image || fallbackImage(game.appid),
+      genres,
+      genresDisplay: genres.slice(0, 2).join('、') || null,
+    };
+  } catch {
+    return { ...game, headerImage: fallbackImage(game.appid), genres: [], genresDisplay: null };
+  }
+}
 
 if (!STEAM_API_KEY) {
   error = '未配置 Steam API Key，请在 Cloudflare Pages 环境变量中设置 STEAM_API_KEY。';
@@ -61,35 +86,20 @@ if (!STEAM_API_KEY) {
     const listUrl = `https://api.steampowered.com/IPlayerService/GetOwnedGames/v1/?key=${STEAM_API_KEY}&steamid=${STEAM_ID}&include_appinfo=true&include_played_free_games=true&format=json`;
     const listRes = await fetch(listUrl);
     if (!listRes.ok) throw new Error(`HTTP ${listRes.status}`);
-    const listJson = (await listRes.json()) as { response?: { games?: SteamApiGame[] } };
+    const listJson = (await listRes.json()) as { response?: { games?: SteamApiGame[]; game_count?: number } };
     const rawGames: SteamApiGame[] = listJson.response?.games || [];
+    totalOwnedCount = listJson.response?.game_count ?? rawGames.length;
     rawGames.sort((a, b) => (b.playtime_forever ?? 0) - (a.playtime_forever ?? 0));
 
-    const topGames = rawGames.slice(0, 200);
-    const enriched = await Promise.all(
-      topGames.map(async (game): Promise<SteamGame> => {
-        try {
-          const detailUrl = `https://store.steampowered.com/api/appdetails?appids=${game.appid}&l=schinese`;
-          const detailRes = await fetch(detailUrl, { headers: { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36' } });
-          const detailJson = (await detailRes.json()) as Record<string, { data?: SteamAppDetails }>;
-          const detail = detailJson[game.appid]?.data;
-          const genres = detail?.genres?.map((g) => g.description) || [];
-          return {
-            ...game,
-            headerImage: detail?.header_image || `https://steamcdn-a.akamaihd.net/steam/apps/${game.appid}/header.jpg`,
-            genres: genres,
-            genresDisplay: genres.slice(0, 2).join('、') || null,
-          };
-        } catch (e) {
-          return {
-            ...game,
-            headerImage: `https://steamcdn-a.akamaihd.net/steam/apps/${game.appid}/header.jpg`,
-            genres: [],
-            genresDisplay: null,
-          };
-        }
-      }),
-    );
+    const topGames = rawGames.slice(0, DETAIL_LIMIT);
+    const enriched: SteamGame[] = [];
+    for (let i = 0; i < topGames.length; i += BATCH_SIZE) {
+      const batch = topGames.slice(i, i + BATCH_SIZE);
+      enriched.push(...(await Promise.all(batch.map(fetchGameDetail))));
+      if (i + BATCH_SIZE < topGames.length) {
+        await new Promise((resolve) => setTimeout(resolve, BATCH_DELAY_MS));
+      }
+    }
     allGames = enriched;
   } catch (e) {
     console.error('Steam API 请求失败:', e);
@@ -110,6 +120,7 @@ const topGenres = [...genreCount.entries()]
   .map(([genre]) => genre);
 
 const totalCount = allGames.length;
+const ownedCount = totalOwnedCount || allGames.length;
 ---
 
 <Layout locale={locale} title={title} description={description}>
@@ -125,7 +136,10 @@ const totalCount = allGames.length;
         <div class="error-msg">⚠️ 没有获取到任何游戏数据，请检查 Steam 个人资料是否公开。</div>
       ) : (
         <>
-          <p class="steam-subtitle">数据通过 Steam Web API 自动获取，在每次构建时更新。共 <strong>{totalCount}</strong> 款游戏。</p>
+          <p class="steam-subtitle">
+            数据通过 Steam Web API 自动获取，在每次构建时更新。库中共 <strong>{ownedCount}</strong> 款游戏，按游玩时长展示前
+            <strong>{totalCount}</strong> 款。
+          </p>
 
           <!-- 分类标签栏 -->
           <div class="genre-tabs">
@@ -196,9 +210,7 @@ const totalCount = allGames.length;
     }
 
     function renderGames() {
-      let filtered = games.filter(game => gameMatchesGenre(game, currentGenre));
-
-      const sorted = [...filtered];
+      const sorted = games.filter(game => gameMatchesGenre(game, currentGenre));
       switch (currentSort) {
         case 'playtime':
           sorted.sort((a, b) => b.playtime_forever - a.playtime_forever);
@@ -215,6 +227,7 @@ const totalCount = allGames.length;
         filteredCountEl.style.display = 'none';
       } else {
         filteredCountEl.style.display = 'inline';
+        filteredCountEl.innerHTML = `显示 <strong>${sorted.length}</strong> 款`;
       }
 
       if (sorted.length === 0) {
@@ -224,10 +237,9 @@ const totalCount = allGames.length;
 
       let html = `<ul class="game-list">`;
       sorted.forEach((game, index) => {
-        const leftClip = index % 2 === 0;
-        const imgOnLeft = leftClip;
+        const imgOnLeft = index % 2 === 0;
         html += `
-          <li class="game-item ${imgOnLeft ? "img-left" : "img-right"}">
+          <li class="game-item ${imgOnLeft ? 'img-left' : 'img-right'}">
             <a class="game-image-wrap" href="https://steamcommunity.com/app/${game.appid}" target="_blank" rel="noopener" aria-label="在 Steam 查看">
               ${game.headerImage
                 ? `<img src="${game.headerImage}" alt="${game.name}" loading="lazy" />`
